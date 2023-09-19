@@ -1,0 +1,305 @@
+\documentclass[11pt]{article}
+\usepackage{graphics}
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{amsbsy}
+\usepackage{mathtools}
+\usepackage{algpseudocode, algorithm, algorithmicx}
+\usepackage{soul}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{float}
+\usepackage{gensymb}
+\usepackage{tabularx}
+\newcommand{\ord}[1]{\textsuperscript{#1}}
+\usepackage{ragged2e}
+\DeclareMathOperator{\DICT}{DICT}
+
+\makeatletter
+\newcommand\multiline[1]{\parbox[t]{\dimexpr\linewidth-\ALG@thistlm}{#1}}
+\makeatother
+\usepackage[margin=1in]{geometry}
+%\renewcommand{\baselinestretch}{1.2}
+\newcommand{\codepar}[2]{\begin{minipage}[t]{#1}#2\end{minipage}}
+\newcommand{\codecomt}[1]{\color{blue}\textit{// #1}\color{black}}
+
+% You can put more user-defined commands here
+
+\makeatletter
+\newlength{\continueindent}
+\setlength{\continueindent}{6em}
+
+\renewenvironment{algorithmic}[1][0]%
+   {%
+   \edef\ALG@numberfreq{#1}%
+   \def\@currentlabel{\theALG@line}%
+   %
+   \setcounter{ALG@line}{0}%
+   \setcounter{ALG@rem}{0}%
+   %
+   \let\\\algbreak%
+   %
+   \expandafter\edef\csname ALG@currentblock@\theALG@nested\endcsname{0}%
+   \expandafter\let\csname ALG@currentlifetime@\theALG@nested\endcsname\relax%
+   %
+   \begin{list}%
+      {\ALG@step}%
+      {%
+      \rightmargin\z@%
+      \itemsep\z@ \itemindent\z@ \listparindent2em%
+      \partopsep\z@ \parskip\z@ \parsep\z@%
+      \labelsep 0.5em \topsep 0.2em%\skip 1.2em 
+      \ifthenelse{\equal{#1}{0}}%
+         {\labelwidth 0.5em}%
+         {\labelwidth 1.2em}%
+       \leftmargin\labelwidth \addtolength{\leftmargin}{\labelsep}
+      \ALG@tlm\z@%
+      }%
+      \parshape 2 \leftmargin \linewidth \continueindent \dimexpr\linewidth-\continueindent\relax
+   \setcounter{ALG@nested}{0}%
+   \ALG@beginalgorithmic%
+   }%
+   {% end{algorithmic}
+   % check if all blocks are closed
+   \ALG@closeloops%
+   \expandafter\ifnum\csname ALG@currentblock@\theALG@nested\endcsname=0\relax%
+   \else%
+      \PackageError{algorithmicx}{Some blocks are not closed!!!}{}%
+   \fi%
+   \ALG@endalgorithmic%
+   \end{list}%
+   }%
+\makeatother
+
+\renewcommand{\thealgorithm}{}
+
+\begin{document}
+
+\hrule
+\begin{center}
+    \textbf{CS91T: Computational Geometry}\hfill \textbf{Fall 2023}\newline
+
+    {\Large Homework 1}
+
+    David Yang and Nick Fettig
+\end{center}
+
+\hrule
+
+\vspace{1em}
+
+
+\begin{enumerate}
+
+    \item \textbf{Let $S, T \subseteq \mathbb{R}^2.$ Carefully argue that CH$(S)$ and CH($T$) are disjoint if and only if there is some line that separates $S$ and $T$, meaning that $S$ is entirely on one side of the line and $T$ is entirely on the other side of the line.} \\
+
+    We will prove both directions of the if and only if. \\
+    
+    Let us begin by proving the reverse direction. Assume that there exists a line $\ell$ that separates $S$ and $T$. Note that $\ell$ separates the plane into two half-planes. Let us use $S'$ to denote the half-plane containing $S$ and no points of $T$, and $T'$ to denote the half-plane containing $T$ and no points of $S.$ By definition, CH($S$) is the intersection of all half-spaces containing $S$. Since one such half-space is $S'$, we know that CH($S$) lies completely on the side of $\ell$ containing points in $S$. Similarly, CH($T$) is the intersection of all half-spaces containing $T$. Since one such half-space is $T'$, we know that CH($T$) lies completely on the side of $\ell$ containing points in $T$. Thus, since CH($S$) and CH($T$) lie on opposite sides of the line $\ell$, they must be disjoint, as desired. \\
+
+    It remains to show the forward direction. Let CH($S$) and CH($T$) be disjoint. Then there is some minimum distance between CH$(S)$ and CH($T$).\footnote{In the case that one set is open and the other is closed, we can approximate the open set with a closed one.} Let $\overline{AB}$ be this minimal line segment, with $A \in \text{CH}(S)$ and $B \in \text{CH}(T)$. We claim that the perpendicular bisector of $\overline{AB}$ is a line $\ell$ that separates $S$ and $T$. For the sake of contradiction, assume that $\ell$ does not separate $S$ and $T$. Then without loss of generality, there must be some point $S' \in S$ on the opposite side of $\ell$ from $A$. Since $S' \in S$, by definition, the convex hull of $S$ must include the segment $\overline{AS'}$, Drop the altitude from $B$ to $\overline{AS'}$ and denote the point on $\overline{AS'}$ as $C$. By the Pythagorean Theorem, we know that \[\overline{BC}^2 + \overline{AC}^2 = \overline{AB}^2\]
+
+    so we must have that $\overline{BC} < \overline{AB}$. However, $C$ is in the convex hull of $S$ (since it is on $\overline{AS'}$) and $B$ is in the convex hull of $T$, and so we have found $\overline{BC}$, a segment connecting points in the convex hulls of $S$ and $T$ that has smaller distance than our assumed minimum distance segment $\overline{AB}$. We've arrived at a contradiction, and so we know that $\ell$ separates $S$ and $T$, as desired. \\
+    
+    Thus, we've shown both sides of the if and only if, and so we can conclude that CH$(S)$ and CH($T$) are disjoint if and only if there is some line that separates $S$ and $T$.
+    \newpage
+    
+    \item \textbf{Design an $O(n\log n)$-time algorithm to find the convex hull of $n$ unit circles. Note that you will need, as part of your solution, to devise a reasonable way to represent this hull in data since it will not be a polygon.}
+    
+
+    Given $n$ unit circles, we can easily compute the centers of each of these circles. In the following algorithm, we will assume that we have an array $C = [C_1, C_2, \dots , C_n]$ where $C_1, C_2, \dots, C_n$ represent the centers of the unit circles. This algorithm will return two values: $B$, the ``vertices" belonging to the convex hull of the unit circles, and $A$, a list of objects holding arc length data. Each entry of $A$ will hold two points in $B$ and the arc length between these two points.
+
+    \begin{minipage}[t]{0.9\textwidth}
+    \begin{algorithm}[H]
+    \caption{\textsc{ConvexHullUnitCircles}($C$)}
+    \begin{algorithmic}[1]
+        \State{Sort the centers of $C$ from left to right (by their x-coordinate)}
+        \State{Set $P \coloneqq$ an array of points outputted by a function, GrahamScan, that produces a convex hull of its input, $C$ }
+        \State{Set $ B \coloneqq$ a $|P|$-length empty array, $S \coloneqq $ a $P$-length empty array}
+        \For {\textbf{each} $i$ in $\{1, 2, \dots, |P|\}$} \hfill \codecomt{To find CH vertices}
+        \State{Set $L$ $\coloneqq$ the line segment $\overline{P_i P_{(i+1) \, \% \,|P|}}$}
+        \State{Set $L_{inv} \coloneqq$ the line segment connecting $P_i$ and the point found extending the endpoint of a $90\degree$ CCW rotation of $L$ by $1$ unit}
+        \State{Set $b_i \coloneqq$ the point of intersection between $C_i$ and $L_{inv}$ }
+        \State{Set $b_{(i + 1)\% |P|} \coloneqq$ be the point of intersection between a line passing through $b_i$ of length $L$ parallel to $\overline{P_iP_{(i+1) \, \% \,|P|}}$ and $C_{i+1}$}
+        \State{Set $B[i] = b_i$ and $B[(i+1) \, \% \, |P| \,] = b_{(i + 1) \, \% \, |P|}$}
+        \EndFor
+        \For {$i = \{1, 2, \dots, |P|\}$} \hfill \codecomt{To find CH arc lengths}
+        \If{$i = 1$}
+            \State{Set $s \coloneqq$ 180 - (the angle between $\overline{P_1 P_2}$ and $\overline{P_1 P_{|P|}}$)}
+            \State{Add arc-length object with points $b_1, b_{|P|}$ and arc length $s$ to $A$}
+
+
+        \Else
+        \State{Set $s \coloneqq$ 180 - (the angle between $\overline{P_i P_{(i+1) \, \% \,|P|}}$ and $\overline{P_i P_{i - 1}})$}
+        \State{Add arc-length object with points $b_i, b_{i+1}$ and arc length $s$ to $A$}
+        \EndIf
+        \EndFor
+        \State{Return $A, B$}
+    
+    \end{algorithmic}
+    \end{algorithm}
+    \end{minipage}
+    
+    % \subsection*{Algorithm Steps (we might not need this)}
+    % \begin{enumerate}
+    %     \item Generate the set of the centers of each of the unit circles called $C= \{C_1, C_2, ...C_n\}$
+    %     \item Use Graham-Scan to find the convex hull of C and add each point into a list $P = [P_1, P_2, ...P_n]$
+    %     \item Initialize a list, $B$, to hold boundary of CH of unit-circles
+    %     \item Initialize a list, $S$, to hold the arc length of $B_i$ and $B_{(i+1)\%n}$ 
+    %     %Base case%
+    %     \item NOTE: NEED BASE CASES FOR $n < 3$
+    %     \item For $i = 1$ to $n$ points in $P$: [to find CH vertices]
+    %     \begin{enumerate}
+    %         \item Call $L$ the line segment between $P_i$ and $P_{(i+1)\%n}$
+    %         \item Call $L_{inverse}$ the line segment between $P_i$ and the point found by taking a $90\degree$ CCW rotation of $L$ and extended by 1 unit
+    %         \item Call $b_i$ the point at the intersection between $C_i$ and $L_{inverse}$ 
+    %         \item Call $b_{i+1}$ the point found by adding $L$ to point $b_i$
+    %         \item Add $b_i$ and $b_{i+1}$ to list $B$ 
+    %     \end{enumerate}
+    %     \item For $i=1$ to $n$ points in list $B$ where $i=i+2$ each iteration: [to find CH arc lengths]
+    %     \begin{enumerate}
+    %         \item Calculate arc length, $s_i$ between $B[i]$ and $B[(i-1)\%n]$ by subtracting the angle between $C_i\rightarrow P_i$ and $C_i \rightarrow P_{(i-1)\%n}$ from 180
+    %         \item Add $s_i$ to $S$
+    %     \end{enumerate}
+    %     \item Return $B, S$
+    % \end{enumerate}
+
+    \vspace{1cm}
+    
+    \textbf{Runtime Analysis:} Lines 1-3 are initialization steps. Sorting the centers of the unit circles takes $O(n\log n$) time, which is performed once. Graham Scan takes $O(n)$ time after sorting. \\
+
+    To find the CH vertices (lines 4-10), each unit circle in the convex hull (at most, $n$) must be evaluated. It takes constant time, $O(1)$, to find the line segment connecting the centers of circle $P_i$ and circle $P_{(i+1)\%|P|}$ (line 5) and the line segment with inverse slope in the CCW direction and the circle $C_i$ (line 6). Finding points $b_i$ and $b_{(i+1)\%|P|}$ (lines 7-8) also takes constant time as evaluating intersections between lines and circles is $O(1)$. Adding points $b_i$ and $b_{(i+1)\%|P|}$ to their respective positions in $B$ (line 9) also takes constant time. Therefore, each of the operations in the (at most) $n$-length for loop is constant time, and the run-time of finding the vertices of the CH is $O(n)$. \\
+
+    To find the arc lengths of the CH (lines 11 - 19), the unit circles (at most, $n$) that make up the convex hull are evaluated again. Finding the angles between the line segments and creating/storing the arc-length object both take $O(1)$ time. Therefore, each of the operations in the (at most) $n$-length for loop is constant time, and the run-time of finding the arc-lengths of the CH is $O(n)$. \\
+
+    The sorting step takes $O(n\log n)$ time. Both finding the vertices and arc lengths take $O(n)$ time. Thus, the overall runtime of this algorithm is \[O(n \log n) + O(n) + O(n) = O(n\log n)\] as desired. \\
+
+    \textbf{Algorithm Explanation:} Our algorithm for finding the convex hull of $n$ unit circles essentially amounts to finding the convex hull of the centers of the $n$ unit circles, extending a 1 unit boundary around the convex hull of these centers, and ``rubber-banding" the corners (corresponding to arcs of circles). To distinguish between vertices and the arc lengths of our convex hull, we split our work into two steps: the first occurs in lines $4$ to $10$ and the second occurs in lines $11$ to $18$. \\
+    
+    In lines $4$ to $10$, we use $L$ and use a ninety-degree counterclockwise rotation (we extend by an extra unit in case $L$ is less than $1$ unit which can occur if circles are overlapping) to find $L_{inv}.$ The intersection of each $L_{inv}$ and $C_i$ gives us the vertices in our convex hull boundary. In lines $11$ to $18$, we compute the angles for each arc that connects pairs of consecutive convex hull vertices. \\
+
+    \textbf{Proof of Correctness:} Let $S$ denote our original set of circles and let $S'$ be the set of points that are the centers of the circles in $S$. We will show that a circle in $S$ appears on the boundary of our final convex hull if and only if the center of the circle lies on the convex hull of $S'$. \\
+
+    The reverse direction of this statement follows nicely from the algorithm's construction -- if the center of a circle lies on CH$(S')$, then it must lie on the boundary of our final convex hull. This holds due to lines $4$ to $10$ and lines $11$ to $18$ of our algorithm, which extend the boundary of CH$(S')$ and ``wrap" the corners of this extended boundary to fit the arcs of the circles, giving us the convex hull of the circles themselves. The forward direction follows similarly -- any arc of a circle on the boundary of our final convex hull must have originated from a $1$ unit extension from the boundary of CH$(S')$, meaning that the center of that circle must lie on the boundary of CH$(S')$. \\
+
+    It remains to show that the shape of our convex hull is optimal -- namely, that the boundary of the convex hull of these unit circles consists of straight line segments and arcs of circles in $S$. We argue that straight lines must be included since the convex hull must, by definition, include line segments that are tangent to consecutive circles on the boundary. Finally, the boundary of the convex hull will include arcs to maintain the convexity of the hull (if the boundary edges were wrapped by lines, then there is some segment of points in a unit circle that is not contained in the convex hull). 
+    
+    \newpage
+
+    \item \textbf{Given a set $S$ of $n$ points in the plane, let's say the boundary of CH$(S)$ is the first \textit{layer} of $S$, and for each $i > 1$, the $i^{\text{th}}$ layer is the boundary of the convex hull of $S$ with the first $i-1$ layers removed.} 
+
+    \textbf{The \textit{peeling depth} of a point $p \in S$ is the number of layers that lie outside of it (i.e. $p$'s peeling depth is $i-1$ if it is in the $i^{\text{th}}$ layer. Design an $O(n^2)$-time algorithm for finding the peeling depth of any given point $p \in S.$}
+
+    In this algorithm, we assume that we have an array pts $= [p_1, p_2, \dots, p_n]$ where $p_1, \dots, p_n$ represent the $n$ points of $S$ in their given order. We want to find the peeling depth of any point $p \in S.$
+    
+    \begin{minipage}[t]{0.9\textwidth}
+    \begin{algorithm}[H]
+    \caption{\textsc{FindPeelingDepth}(pts)}
+    \begin{algorithmic}[1]
+        \State{Sort the points in array pts from left to right (by their $x$-coordinate.)}
+        \State{Set visited $\coloneqq$ an $n+1$-length array storing the peeling depth of each point in the sorted array. All entries are initialized to $0$.  }
+        \State{Set $ counter \coloneqq 0 $, $\ell \coloneqq 1$}
+      \While{$ counter < n$}
+      \State{Create \text{US}, \text{LS} $\coloneqq$ empty stacks which will contain the upper and lower hulls of layer $\ell$}
+        \State {Call the subroutine of Graham's Scan to find the upper hull of layer $\ell$. At each step, only consider points pts$[i]$ where visited$[i] == 0$, and store selected points in US by their sorted index. }
+        \State {Call the subroutine of Graham's Scan to find the lower hull of layer $\ell$. At each step, only consider points pts$[i]$ where visited$[i] == 0$, and store selected points in LS by their sorted index.}
+
+        \While{US is non-empty}
+            \State{Set visited[US$.pop()] == \ell$}
+            \State{Increment counter}
+        \EndWhile
+
+       \While{LS is non-empty}
+            \State{Set visited[LS$.pop()] == \ell$}
+            \State{Increment counter}
+        \EndWhile        
+        % \State {Create \text{US} $\coloneqq$ an empty stack, which will contain the upper hull of layer $\ell$}
+        % \For{$i = 1$ to $n$}
+        %     \If{\text{\text{US}.size()} $< 2$ \textbf{and} $!\text{visited}[i - 1]$}
+        %         \State{\text{US}.push(pts$[i]$)}
+        %     \EndIf
+            
+        %     \While {the turn from the top two points in the stack exists and is a left turn} 
+        %     \State{\text{US}.pop(pts$[i]$)}
+        %     \EndWhile
+
+        %     \State{\text{US}.push(pts$[i]$)}
+            
+        % \EndFor
+
+        % \State \codecomt{Find the Lower Hull of layer $\ell$}
+        % \State {Create \text{LS} $\coloneqq$ an empty stack, which will contain the upper hull of layer $\ell$}
+        % \For{$i = 1$ to $n$}
+        %     \If{\text{\text{LS}.size()} $< 2$ \textbf{and} $!\text{visited}[i - 1]$}
+        %         \State{\text{LS}.push(pts$[i]$)}
+        %     \EndIf
+            
+        %     \While {the turn from the top two points in the stack exists and is a right turn} 
+        %     \State{\text{LS}.pop(pts$[i]$)}
+        %     \EndWhile
+
+        %     \State{\text{LS}.push(pts$[i]$)}
+            
+        % \EndFor
+      \EndWhile
+    \end{algorithmic}
+    \end{algorithm}
+    \end{minipage}
+
+\vspace{1cm}
+
+\textbf{Runtime Analysis}: In lines $1$ to $3$, we perform some initialization steps. The sorting of the elements in the points array takes $O(n \log n)$ time, and we perform this operation just once. \\
+
+The main steps occur in lines $6$ and $7$; each subroutine mentioned takes $O(n)$ time, since each point is pushed and popped at most twice when finding the upper and lower hulls. Since we are only considering points not already found in previous layers, this entire checking and finding process takes at most $O(n)$ time. In lines $8$ to $11$ and $12$ to $15$, we simply loop through the stack, popping points and storing the current layer, corresponding to these points' peeling depth. Since each stack contains at most $n$ points, these steps take $O(n)$ time. Consequently, each iteration of the outer while loop in line $4$ runs in $O(n)$ time. \\
+
+Finally, note that there are at most $O(n)$ iterations of the while loop in line $4$. Each subroutine of Graham's Scan finds the upper and lower hulls corresponding to layer $i$; these hulls contain at least one point each. Equivalently, each iteration finds a layer of $S$, which contains at least one point. Thus, we require $O(\frac{n}{1}) = O(n)$ iterations to find the layer of all $n$ points. \\
+
+Our sorting step takes $O(n \log n)$ time. Then, we perform $O(n)$ iterations of the loop in line $4$, each of which run in $O(n)$ time. Thus, our overall runtime is \[O(n \log n) + O(n) \cdot O(n) = O(n^2)\] as desired. \\
+
+ \textbf{Proof of Correctness}: The correctness of our algorithm is essentially given to us from the correctness of Graham's Scan. We know that Graham's Scan finds the upper and lower hull of a set of points. We add the extra condition to only check points that have not already been assigned to a layer; this enforces the fact that once we assign a point to a layer, we will never consider it again and thus, it cannot be erroneously assigned to another layer. After the first subroutine on line $6$ completes, we have the upper hull of layer $\ell$, and after the first subroutine on line $7$, we have the lower hull of layer $\ell$. All points in the union of the upper and lower hull are correspondingly assigned to layer $\ell$, and this assignment is reflected in line $13$. \\
+
+To summarize, for each iteration of the while loop on line $4$, we find the boundary of the remaining non-assigned points in set $S$ using Graham's Scan and then assign the points on the boundary to their corresponding layer. We continue until we have assigned each point in $S$ their peeling depth. Consequently, we can find the peeling depth associated to any point $p \in S$. Since Graham's Scan is correct, so is \textsc{FindPeelingDepth}. 
+
+\newpage
+
+\item \textbf{In real-world applications, the set you need to find the convex hull of is often \textit{dynamic}, changing over time. In these situations, you want to be able to handle small changes in the input without having to start over from scratch.}
+
+\textbf{To be concrete, suppose you receive $n$ points $p_1 , \dots , p_n \in \mathbb{R}^2$ one at a time, and after each
+point $p_i$ arrives, you need to return CH$(\{p_1, \dots , p_i\})$ (as a clockwise sequence of vertices, as usual). Design an algorithm that outputs all $n$ of these convex hulls in $O(n^2)$ time total.} 
+
+We assume we are given an array, $P$, which includes $[p_1, p_2, \dots p_n]$, the points to generate $n$ convex hulls for.
+
+\begin{minipage}[t]{0.9\textwidth}
+\begin{algorithm}[H]
+\caption{\textsc{DynamicConvexHull($P$)}}
+\begin{algorithmic}[1]
+    \State {Set $T \coloneqq$ an empty AVL Tree}
+    \State {Set $Ret \coloneqq$ an empty array of size $n$}
+    \For{\textbf{each} $p$ in $P$}
+    \State{Add $p$ to $T$ (where $T$ is arranged by the order of the x-coordinates)}
+    \State{Call $arr$ the $n$-length array output of an in-order traversal of $T$}
+    \State{Set $CH \coloneqq$ an array of points outputted by a function, GrahamScan, that produces a convex hull of its input, $arr$ }
+    \State{Add $CH$ to $Ret$}
+    \EndFor
+    \State{Return $Ret$}
+
+\end{algorithmic}
+\end{algorithm}
+\end{minipage}
+
+\vspace{1em} 
+
+\textbf{Runtime Analysis:} Lines 1 and 2 are initialization steps for the data structures used for this algorithm. \\
+
+Lines 3-8 are the bulk of the algorithm. We will need to evaluate each point, $p_i$, of $n$ total points. Therefore, to keep the algorithm $O(n^2)$, each step must be at most $O(n)$. Adding each point to T, an AVL tree, takes $O(\log n)$. An in-order traversal of AVL tree's takes $O(c)$ time where $c$ represents the tree's size. Because the AVL tree will only hold up to $n$ points, the worst time for generating a sorted array of $T$ will be $O(n)$. Graham Scan takes $O(n)$ time on sorted array $arr$. Adding a value to an array of known length takes $O(1)$, which is the last step of the algorithm. \\
+
+Therefore, the total runtime of this algorithm is \[O(n) \cdot (O(\log(n)) + O(n) + O(n) + O(1)) = O(n^2)\]
+
+\vspace{1em}
+
+\textbf{Proof of Correctness:} \textsc{DynamicConvexHull} works because Graham Scan works. For each point added to $T$, Graham Scan is used to produce the new convex hull which is added to $Ret$. As long as the input being fed into \textsc{GrahamScan} is a correctly sorted array of the points up to $p_i$, the function will return CH$(\{p_1, \dots , p_i\})$. Therefore, because the in-order traversal of $T$ always yields the correct sorted order, \textsc{DynamicConvexHull} works.
+
+\end{enumerate}
+\end{document}

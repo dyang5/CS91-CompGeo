@@ -1,0 +1,337 @@
+\documentclass[11pt]{article}
+\usepackage{graphics}
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{amsbsy}
+\usepackage{mathtools}
+\usepackage{algpseudocode, algorithm, algorithmicx}
+\usepackage{soul}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{float}
+\usepackage{gensymb}
+\usepackage{tabularx}
+\newcommand{\ord}[1]{\textsuperscript{#1}}
+\usepackage{ragged2e}
+\DeclareMathOperator{\DICT}{DICT}
+
+\makeatletter
+\newcommand\multiline[1]{\parbox[t]{\dimexpr\linewidth-\ALG@thistlm}{#1}}
+\makeatother
+\usepackage[margin=1in]{geometry}
+%\renewcommand{\baselinestretch}{1.2}
+\newcommand{\codepar}[2]{\begin{minipage}[t]{#1}#2\end{minipage}}
+\newcommand{\codecomt}[1]{\color{blue}\textit{// #1}\color{black}}
+
+% You can put more user-defined commands here
+
+\makeatletter
+\newlength{\continueindent}
+\setlength{\continueindent}{6em}
+
+\renewenvironment{algorithmic}[1][0]%
+   {%
+   \edef\ALG@numberfreq{#1}%
+   \def\@currentlabel{\theALG@line}%
+   %
+   \setcounter{ALG@line}{0}%
+   \setcounter{ALG@rem}{0}%
+   %
+   \let\\\algbreak%
+   %
+   \expandafter\edef\csname ALG@currentblock@\theALG@nested\endcsname{0}%
+   \expandafter\let\csname ALG@currentlifetime@\theALG@nested\endcsname\relax%
+   %
+   \begin{list}%
+      {\ALG@step}%
+      {%
+      \rightmargin\z@%
+      \itemsep\z@ \itemindent\z@ \listparindent2em%
+      \partopsep\z@ \parskip\z@ \parsep\z@%
+      \labelsep 0.5em \topsep 0.2em%\skip 1.2em 
+      \ifthenelse{\equal{#1}{0}}%
+         {\labelwidth 0.5em}%
+         {\labelwidth 1.2em}%
+       \leftmargin\labelwidth \addtolength{\leftmargin}{\labelsep}
+      \ALG@tlm\z@%
+      }%
+      \parshape 2 \leftmargin \linewidth \continueindent \dimexpr\linewidth-\continueindent\relax
+   \setcounter{ALG@nested}{0}%
+   \ALG@beginalgorithmic%
+   }%
+   {% end{algorithmic}
+   % check if all blocks are closed
+   \ALG@closeloops%
+   \expandafter\ifnum\csname ALG@currentblock@\theALG@nested\endcsname=0\relax%
+   \else%
+      \PackageError{algorithmicx}{Some blocks are not closed!!!}{}%
+   \fi%
+   \ALG@endalgorithmic%
+   \end{list}%
+   }%
+\makeatother
+
+\renewcommand{\thealgorithm}{}
+
+\begin{document}
+
+\hrule
+\begin{center}
+    \textbf{CS91T: Computational Geometry}\hfill \textbf{Fall 2023}\newline
+
+    {\Large Homework 2}
+
+    David Yang and Nick Fettig
+\end{center}
+
+\hrule
+
+\vspace{1em}
+
+
+\begin{enumerate}
+    \item \textbf{Suppose you are given $n$ points $p_1, \dots, p_n \in \mathbb{R}^2$, and you want to know whether connecting these points in order will give you the boundary of a simple polygon. Give an $O(n\log n)$-time algorithm for checking this.} \\
+
+    Assume $P$ is formatted as an array list of all points $p_i, \dots, p_n$. Also assume we have a line segment class to hold points.
+
+
+    \begin{minipage}[t]{0.9\textwidth}
+    \begin{algorithm}[H]
+    \caption{\textsc{IsSimplePolygon}($P$)}
+    \begin{algorithmic}[1]
+        \State{Set $EP \coloneqq$ empty list, will hold stored event points}
+        \State{Set $LS \coloneqq$ empty list, will hold stored line segments}
+        \For{\textbf{each} $i \in \{1, \dots, n\}$}
+            \State{Append line segment $\ell_{i} = \overline{p_ip_{(i+1) \% n}}$ to $LS$}
+            \State{Append two endpoints of $\ell_i$ to $EP$}
+        \EndFor
+        \State{Sort event points in reverse order of $y$-coordinate}
+        \State{Run modified\footnotemark \, \textsc{PlaneSweep} algorithm on set of line segments $LS$.}
+
+        \If{at any point, there are any other intersections}
+            \State{\textbf{return} false}
+        \EndIf
+        
+        \If{\textsc{PlaneSweep} concludes without returning}
+            \State{\textbf{return} true}
+        \EndIf 
+    \end{algorithmic}
+    \end{algorithm}
+    \end{minipage}
+    \footnotetext{We allow line segments $\ell_i, \ell_{i+1}$ to intersect at $p_{(i+1) \% n}$ and do not count these towards any intersections.}
+
+    \vspace{1cm}
+
+    \textbf{Runtime Analysis:} In our algorithm, lines $1$ to $6$ represent our preprocessing steps. In lines $1$ and $2$, we create empty lists used to hold our event points and line segments, respectively. In lines $3$ to $5$, we create $n$ line segments corresponding to our $n$ potential edges of the simple polgon, and add $2n$ endpoints to our event points list; this totals $O(n)$ time. In line $6$, we call a modified version of \textsc{PlaneSweep}, which runs in $O((n+k) \log n)$ time for $n$ points and $k$ incidences between segments and intersection points. By construction, our modified \textsc{PlaneSweep} algorithm will halt if there are intersections that are not at the vertices of the boundary; since there are $O(n)$ such vertices, there are at most $m = O(n)$ incidences considered by \textsc{PlaneSweep} and so our algorithm will run in $O(n + O(m)) \log n = O(n \log n)$ time, as desired.  \\
+
+    \textbf{Proof of Correctness:} Connecting the $n$ points $p_1, p_2, \dots, p_n$ will only give the boundary of a simple polygon if these connections are piecewise linear, simple, and closed. The piecewise linear and closed conditions are given by construction, and so it suffices to check that the connections are simple, meaning the edges do not intersect. \\
+
+    By definition, our \textsc{PlaneSweep} algorithm will do just that -- clearly, consecutive edges $\ell_i, \ell_{i+1}$ are allowed to intersect at $p_{(i+1) \% n}$, but any other intersection corresponds to a violation of the simple condition for a simple polygon. \\
+
+    On the other hand, if our \textsc{PlaneSweep} algorithm does not find any other intersections, we have the boundary of a simple polygon, as desired.
+    
+    \newpage
+
+    \item\textbf{Give an $O(n\log n)$-time algorithm to determine whether there are any overlapping disks in a set of $n$ disks.} \\
+
+    Assume we are given an array list of disks, $D$. Given the disks, we can easily find each disk's center point and radius in $D$, and this information will also be passed into the algorithm.
+    
+    \begin{minipage}[t]{0.9\textwidth}
+    \begin{algorithm}[H]
+    \caption{\textsc{OverlappingDisks}($C$)}
+    \begin{algorithmic}[1]
+        \State{Set $A \coloneqq$ empty list, will hold stored arcs and the disk they originate from}
+        \State{Set $EP \coloneqq$ empty list, will hold event points}
+        \For{\textbf{each} $i \in \{1, \dots, n\}$}
+            \State{Append highest and lowest vertical points in disk $D_i$ to $EP$ (along with value $i$)}
+            \State{Split $D_i$ at those points; append the resulting two arcs of $D_i$ to $A$ (along with value $i$)}
+        \EndFor        
+        \State{Sort event points in reverse order of $y$-coordinate}
+        \State{Run \textsc{PlaneSweep} algorithm on event points with the extra conditions:}
+        \begin{itemize}
+            \item Maintain a left-to-right ordered list of arcs at $y$-coordinates of event points using a BST
+            \item Ignore intersections between arcs belonging to the same disk
+            \item For each new neighbor relation introduced:
+            \begin{itemize}
+                \item Let $D_i$ and $D_j$ be the circles that the arcs with the given endpoints belong to
+                \item If the distance between the center of $D_i$ and the center of $D_j$ is less than the sum of the radii of $D_i$ and $D_j$, \textbf{return} true
+                \item Otherwise, insert/remove arc in BST
+            \end{itemize}
+        \end{itemize}
+        \If{at any point, there are any other intersections}
+            \State{\textbf{return} true}
+        \EndIf
+        \If{\textsc{PlaneSweep} concludes without returning}
+            \State{\textbf{return} false}
+        \EndIf 
+    \end{algorithmic}
+    \end{algorithm}
+    \end{minipage}
+    
+    \vspace{1cm}
+
+    \textbf{Runtime Analysis:} Lines $1$ to $6$ in our algorithm constitute the preprocessing steps. In lines $1$ and $2$ we create (initially) empty lists $A$ and $EP$, which will hold our stored arcs and event points. In line $4$, we split each of the $n$ disks vertically, appending the highest and lowest points (in terms of $y$-coordinate) to the list of event points and in line $5$, we append the two resulting arcs to the list of arcs; since there are $O(2n)$ event points and $O(2n)$ arcs, we can do this appending in $O(n)$ time. \\
+
+    In line $7$, we sort our $O(n)$ event points in reverse order of $y$-coordinate so that the highest vertical points are listed first; this sorting takes $O(n \log n)$ time. Finally, in lines $8$ to $14$, we run a modified version of the \textsc{PlaneSweep} algorithm that ignores intersections between arcs belonging to the same disk and that performs another check between neighboring circles for their corresponding arcs. 
+    \textsc{PlaneSweep} runs in $O((n+m) \log n)$ time for $n$ points and $m$ intersection points; here, our modification ignores the $O(n)$ intersections between arcs of the same disk and if any other intersection occurs, the algorithm terminates and we return true. Our extra check that compares the centers of the circles and the sum of their radii is a constant time check for each new neighbor relation introduced. 
+    Since each of our $O(n)$ event points introduces a constant number of new neighbor relations, the total time from these checks is $O(n) \cdot O(1) \cdot O(1) = O(n)$. Consequently, our modified \textsc{PlaneSweep} algorithm runs in $O((n+ O(n))\log n) + O(n) = O(n \log n)$ time. \\
+
+    Our preprocessing takes $O(n)$ time, our sorting takes $O(n \log n)$ time, and the \textsc{PlaneSweep} algorithm takes $O(n \log n)$ time; thus, our overall algorithm runs in the desired $O(n \log n)$ time. \\
+
+    \textbf{Proof of Correctness:} We will prove the correctness of this algorithm using induction on the number of event points already handled; more specifically, we will show that the order of the arcs in our BST is properly maintained at each iteration. For the base case, observe that our algorithm correctly handles the first event point; \textsc{PlaneSweep} simply adds the arc of the event point to a BST, and the order is correct given there is just one arc. 
+    For the inductive step, we will show that our algorithm maintains the proper segment ordering (or concludes) at a new event point given that the previous event points are correctly handled. When a new event point is reached, if it is the endpoint of a previous arc, it will be removed from the BST. 
+    On the other hand, if it constitutes a new arc, we will perform an extra check (explained below) and insert it into the proper position in the BST. Since the order of the arcs in the BST can only change at event points, we know that the order of the BST is properly maintained after handling this new event point, as desired. 
+    Thus, by induction, our modified \textsc{PlaneSweep} properly handles the order of the arcs at each event point.  \\
+    
+    \textsc{PlaneSweep} with no modifications finds intersections between the arcs of each disk; equivalently, it detects intersections between the boundaries of the disks. We ignore ``trivial" intersections between arcs belonging to the same disk since such an intersection does not correspond to a pair of overlapping disks. It remains to show that our additional modification to the \textsc{PlaneSweep} algorithm detects a disk that is fully contained in another since such an intersection will not be found by a typical \textsc{PlaneSweep} algorithm. \\
+
+    To detect such a pair of disks, we claim that it suffices to check the distance between the center of the disks and compare it to the sum of the radii of the disks. More formally, we claim that disk $D_i$ overlaps $D_j$ if and only if the sum of the radii of $D_i$ and $D_j$ is greater than the distance between their centers. For the forward direction, note that if $D_i$ and $D_j$ overlap, then the distance between their centers is the sum of their radii minus some nontrivial length corresponding to their overlapping region, so the sum of their radii must be greater than the distance between their centers. For the reverse direction, we appeal to the contrapositive; if $D_i$ and $D_j$ do not overlap, the distance between their centers is greater than the sum of their radii, and so we are done. \\
+
+    Thus, our modified \textsc{PlaneSweep} algorithm, which checks an extra condition between neighboring disks at event points, will find any overlapping disks in a set of $n$ disks, as desired. 
+
+    \newpage
+
+    
+    \item \textbf{Let $S$ be a set of n triangles in the plane with disjoint boundaries. Let $P$ be a set of n points in the plane. Give an $O(n\log n)$-time algorithm that lists all points in $P$ that lie outside of all triangles.} \\
+    
+    \begin{minipage}[t]{0.9\textwidth}
+    \begin{algorithm}[H]
+    \caption{\textsc{PointsOutsideTriangles}($S, P$)}
+    \begin{algorithmic}[1]
+        \State{Set $EP \coloneqq$, an empty list that will store event points}
+        \State{Set $E \coloneqq$, an empty list that will store edges and the triangles they belong to}
+        \State{Set $O \coloneqq$ an empty list which will store points outside of all triangles.}
+        \For{each triangle $T_1, \dots T_n$ in $S$}
+        \State{Find the three vertices of the triangle and append each vertex to $EP$, along with the number $i$ signifying it is a vertex of triangle $T_i$}
+        \State{Append each edge of triangle $T_i$ to $E$, along with the number $i$ signifying it is an edge of $T_i$}
+        \EndFor
+
+        \For{$i \in \{1, \dots, n\}$}
+        \State{Append point $P_i$ to $EP$}
+        \EndFor
+
+        \State{Sort points in $EP$ by reverse order of $y$-coordinate}
+        \State{Run vertical \textsc{PlaneSweep} 
+ (sweeping down) algorithm on event points in $EP$ by:}
+        \begin{itemize}
+            \item Maintaining a left-to-right ordered list of segments at $y$-coordinates of event points using a BST
+            \item At each event point $v'$ corresponding to a vertex of a triangle in $S$
+            \begin{itemize}
+                \item Consider the two (if they exist) neighboring segments of $v'$ in the BST and the triangles they belong to
+                \item If $v'$ lies in one of those triangles, disregard it (and make a note to disregard all other vertices of the triangle $v'$ in $EP$)
+                \item Otherwise, add it to the BST
+            \end{itemize}
+            \item At each event point $p'$ corresponding to a point in $P$
+            \begin{itemize}
+                \item Consider the two (if they exist) neighboring segments of $p'$ and the triangles they belong to
+                \item Check if $p'$ lies outside each of those triangles; if so, add to $O$
+            \end{itemize}
+        \end{itemize}
+
+        \State{\textbf{return} $O$}
+        
+    \end{algorithmic}
+    \end{algorithm}
+    \end{minipage}
+
+    \vspace{1cm}
+
+    \textbf{Runtime Analysis:} Lines $1$ to $10$ constitute the preprocessing phase of our algorithm; we create empty lists and then go through each of the $n$ triangles in lines $4$ to $6$, finding each of the three vertices to a given triangle and appending the resulting details to their appropriate lists. This takes $O(n)$ time. Similarly, in lines $8$ to $10$, we append each of the $n$ points in $P$ to the list $EP$, which takes $O(n)$ time. \\
+
+    In line $11$, we sort the event points by reverse order of their $y$-coordinate (so the point with the greatest $y$-coordinate is first in the list); since there are $3n$ triangle vertices in $EP$ and $n$ points from $P$ in $EP$, we have a total of $4n$ event points, and this sorting runs in $O((4n) \log (4n)) = O(n \log n)$ time. \\
+    
+    Next, in line 12, we run the vertical \textsc{PlaneSweep} algorithm. We maintain a left-to-right ordered list of segments at the $y$-coordinates of our event points using a self-balanced BST, which requires $O(4n \log n) = O(n \log n)$ time to maintain. We add the first check (checking event points $v'$ corresponding to vertices in $S$) as it helps us remove triangles that are enclosed in another. To check whether a new vertex $v'$ is part of one of these triangles, we simply check its two neighboring segments and if those segments belong to the same triangle, check whether $v'$ is enclosed in that triangle; this is a constant time check, to do so, we rely on the fact that $v'$ is enclosed in a triangle if and only if it is to the left of each edge of a triangle (in CCW direction). There are $O(n)$ checks for the $3n$ vertices of our triangles, so this first check totals $O(n)$ time. \\
+    
+    Similarly, when checking if a point $p' \in P$ lies outside of all triangles, we simply check the two neighboring segments of $p'$, and check that $p$ does not lie in the corresponding triangles these segments belong to. Once again, each of these checks can be done in $O(1)$ time. If it is outside both of these triangles, we simply add it to our list $O$, which requires constant time. Since we do a check at each point in $P$, we do $O(n)$ checks, each running in constant time. Thus, the \textsc{PlaneSweep} algorithm concludes in $O(n \log n)$ time. \\
+
+    \textbf{Proof of Correctness:} The correctness of our algorithm relies on the correctness of the \textsc{PlaneSweep} algorithm. We will prove the correctness of this algorithm using induction on the number of event points already handled; more specifically, we will show that the order of the triangles in our BST is properly maintained at each iteration. For the base case, observe that our algorithm correctly handles the first event point; \textsc{PlaneSweep} simply adds the segment of the event point to a BST, and the order is correct given there is just one point. \\
+    
+    For the inductive step, we will show that our algorithm maintains the proper segment ordering (or concludes) at a new event point, given that the previous event points are correctly handled. When a new event point is reached, if it is the second endpoint of a segment, it will be removed from the BST. On the other hand, if it constitutes a new segment, we perform extra checks (with the neighboring segments in the BST, which we can find using binary search) and insert it into the proper position in the BST. Since the order of the segments of the triangles in the BST can only change at event points, we know that the order of the BST is properly maintained after handling this new event point, as desired. Thus, by induction, our modified \textsc{PlaneSweep} properly handles the order of the arcs at each event point. \\
+    
+    Note that our event points include the $3n$ vertices of triangles in $S$ as well as the $n$ points in $P$. We run \textsc{PlaneSweep} with two modifications. As we typically do, we maintain a self-balanced BST of segments at a given $y$-coordinate as we sweep down from the highest event point.  \\
+
+    However, when a new event point is reached, we perform two separate actions depending on whether that point is a vertex in $S$ or a point in $P$. For vertices in $S$, we check the two neighboring segments of this event point (which we can find in $O(1)$ time due to our balanced BST) and check whether this vertex is enclosed in the corresponding triangles -- if it is, we disregard the triangle the new event point lies in. Since the $n$ triangles in $S$ have disjoint boundaries, if a vertex $v'$ from a triangle $t_1$ in $S$ lies in another triangle $t_2$, this means that triangle $t_1$ is enclosed in triangle $t_2$. By adding this constant time check as an extra condition when event points are considered, we maintain an invariant that no triangles in $S$ are enclosed in other triangles. \\
+
+    On the other hand, when an event point $p' \in P$ is reached, we can once again check the neighboring segments of $P$ from the BST and determine the triangles these neighboring segments correspond to. Since our previous condition maintains the invariant that no triangles are enclosed in others, we know that $p'$ is outside of all triangles if and only if $p'$ is outside of the triangles the neighboring segments correspond to. Thus, a constant time check with the two neighboring triangles of the point $p'$ suffices to confirm/deny whether $p'$ lies outside of all triangles in $S$. \\
+
+    Thus, our modified \textsc{PlaneSweep} algorithm, with two extra conditions (one to maintain the invariant that no triangles are enclosed in another and the other to check whether a point is outside of all triangles in $S$), will correctly determine all points in $P$ that lie outside of all triangles, as desired. 
+    
+    \newpage
+
+    \item \textbf{Suppose you are given a point $z \in \mathbb{R}^2$ and a set $S$ of $n$ disjoint line segments. A segment $\overline{p_iq_i}$ is \textit{visible from z} if there is some segment that connects $z$ to any point on $\overline{p_iq_i}$ and does not intersect any other segments in $S$. Design an $O(n\log n)$-time algorithm that uses an angular plane sweep — with a rotating ray sweeping around $z$ — to identify all segments that are visible from $z$.} \\
+
+    Assume we are given an array list, $S$, that contains a pair of the points $p_i$ and $q_i$ that make up each line segment, and the point $z$ to check visibility from. 
+    
+    \begin{minipage}[t]{0.9\textwidth}
+    \begin{algorithm}[H]
+    \caption{\textsc{FindVisibleSegments}($S$, $z$)}
+    \begin{algorithmic}[1]
+        \State{Set $active \coloneqq$ an empty AVL tree}
+        \State{Set $notVisible \coloneqq$ an empty AVL tree}
+        \State{Set $ret \coloneqq$ an empty Array List}
+        \State{Set $sweep \coloneqq$ an Array List of each point (in polar) in $S$}
+        \State{Sort $sweep$ by angle above the horizontal using merge-sort}
+        \For{\textbf{each} $i \in \{1, \dots, 2n\}$}
+            \If{the extension of line $\overline{z \, pt_1}$ intersects with the line belonging to $pt_i$}
+            \State{Add the line belonging to $pt_i$ to $active$ on basis of its position between existing regions of $active$\footnotemark}
+            \EndIf
+        \EndFor
+        \For {\textbf{each} $pt$ in $sweep$}
+        \If{line of $pt$ is in $active$}
+            \If{line of $pt$ is not in $notVisible$}
+                \State{Add line of $pt$ to $ret$}
+            \Else
+                \State{Remove line of $pt$ from $notVisible$}
+            \EndIf
+            \State{Remove line of $pt$ from $active$}
+            \If{the smallest valued line in $active$ is in $notVisible$}
+                \State{Remove smallest valued line in $active$ from $notVisible$}
+            \EndIf
+        \Else  
+            \State{Add line belonging to $pt$ to $active$ on basis of its position between existing regions of $active$ (using the same BS method as above)}
+            \If{line of $pt$ is not the smallest valued line in $active$}
+                \State{Add line of $pt$ to $notVisible$ (where $notVisible$ is also ordered by relative regional position)}
+            \EndIf
+        \EndIf
+        \EndFor
+        \State{\textbf{return} $ret$}
+    
+    \end{algorithmic}
+    \end{algorithm}
+    \end{minipage}
+
+    \footnotetext{we can add by binary searching the existing regions.}
+    \vspace{1cm}
+
+    \textbf{Explanation}: We are only checking the $2n$ endpoints of each line. The \textit{active} AVL tree contains segments where we have not yet found the second endpoint of the segment. The \textit{notVisible} AVL tree contains segments we do not currently see (since some other segment is blocking their previously seen endpoint). Both of these AVL trees are ordered by the relative position of the segments relative to the most recent event point. \\
+    
+    \textbf{Runtime Analysis:}
+    Lines $1$ to $10$ constitute the preprocessing part of the algorithm. We initialize a collection of AVL trees, and array lists, which can all be done in constant time (no values are added just yet). We also perform an initial sweep of the points and sort them by their angle with the horizontal, which can be done in $O(n\log n)$ time. This gives us a list of the points in the order they appear in the counterclockwise direction, stored in $sweep$. In lines $6$ to $10$, we find the ``active" lines at the start of our algorithm; put simply, these are the lines that intersect the extended segment $\overline{z \, pt_1}$; this runs in $O(n)$ time since there are at most $n$ lines that intersect this initial segment. Keeping track of the relative order of these lines takes $O(n \log n)$ time -- we use binary search, which runs in $O(\log n)$ time, to find the right region for each of the $O(n)$ lines intersecting the initial line. \\
+
+    Lines $11$ to $30$ represent the bulk of the algorithm: for each of the points in $sweep$ (corresponding to the $2n$ endpoints of the line segments in $S$), we do two distinct actions, depending on whether we have already seen the other endpoint or not in our angular sweep. The check to see whether the other endpoint has been seen or not can be done in $O(\log n)$ time by searching for the desired line segment in $active$.\\
+
+    Lines $12$ to $21$ correspond to the case where the line an event point corresponds to is already in $active$, meaning the event point is the second seen endpoint of its line. In this case, we perform a constant number of checks/removals from $notVisible$ and $active$; each of these run in $O(\log n)$ time since we are checking/removing from a BST; thus, this case concludes in $O(\log n)$ time. \\
+
+    Lines $22$ to $27$ correspond to the other case, where the second endpoint of the current event point has not yet been seen in the angular sweep. In this case, we insert the line corresponding to the event point into the proper position in $active$ by binary searching the disjoint regions created by the lines in $active$ at the angle of the event point\footnote{this works since the lines are disjoint and thus there are no intersections; the binary search is very similar to Lab 3 Question 1}; this runs in $O(\log n)$ time and the insertion into $active$ will also take $O(\log n)$ time. Finally, we check an extra condition and perform an extra insertion, which runs in $O(\log n)$ time.\\
+
+    There will be $2n$ for-loop iterations because there are two endpoints for each of the $n$ lines in $S$. Therefore, the following represents the total run-time of this algorithm:
+    \[\underbrace{O(n \log n)}_{\text{merge-sort}} + \underbrace{O(2n * (c \cdot O(\log n))}_{\text{angular sweep algorithm}} = O(n \log n).\]
+
+    \textbf{Proof of Correctness:} We will prove the correctness of this algorithm using induction on the number of event points already handled; more specifically, we will show that the order of the line segments in $active$ and $notVisible$ is properly maintained at each iteration. For the base case, observe that our algorithm correctly handles the first event point; we simply add the segment of the event point to a BST, and the order is correct, given there is just one point. \\
+
+    For the inductive step, we will show that our algorithm maintains the proper segment ordering and gives the correct output at a new event point, given that the previous event points are correctly handled. We once again split our algorithm into two cases. \\
+    
+    In the first case, the other endpoint of the segment has already been properly handled. If the segment is not in $notVisible$, then it is visible from $z$, and thus we add it to $ret$. If it was, we remove it from $notVisible$. Afterward, we remove the line segment from $active$ since both endpoints have been considered. Finally, we perform an additional check to remove the smallest valued line in $active$ from $notVisible$ if it was in $notVisible$ since it may have been previously blocked from the line segment we've just removed. These steps all work as intended. These checks and removals consequently preserve the ordering of the segments from $z$ to the current angular sweep.  \\
+
+    In the second case, where we have not yet seen the segment corresponding to the event point, we insert it into the corresponding position in $active$ by binary searching the disjoint regions created by the lines in $active$ at the angle of the event point. By binary searching for the correct region and inserting the line in the corresponding spot in $active$, we once again maintain the ordering of the segments based on their position from the current angular sweep from $z$ to the event point. \\
+
+    In both cases, our algorithm maintains the proper segment ordering and gives the correct output at a new event point, given that the previous event points are correctly handled. Thus, by induction, our angular plane sweep algorithm correctly identifies all segments visible from $z$, as desired.
+    
+
+    
+    \newpage
+
+\end{enumerate}
+\end{document}

@@ -1,0 +1,166 @@
+\documentclass[11pt]{article}
+\usepackage{graphics}
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{amsbsy}
+\usepackage{mathtools}
+\usepackage{algpseudocode, algorithm, algorithmicx}
+\usepackage{soul}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{float}
+\usepackage{gensymb}
+\usepackage{tabularx}
+\newcommand{\ord}[1]{\textsuperscript{#1}}
+\usepackage{ragged2e}
+\usepackage{tipa}
+\DeclareMathOperator{\DICT}{DICT}
+
+\makeatletter
+\newcommand\multiline[1]{\parbox[t]{\dimexpr\linewidth-\ALG@thistlm}{#1}}
+\makeatother
+\usepackage[margin=1in]{geometry}
+%\renewcommand{\baselinestretch}{1.2}
+\newcommand{\codepar}[2]{\begin{minipage}[t]{#1}#2\end{minipage}}
+\newcommand{\codecomt}[1]{\color{blue}\textit{// #1}\color{black}}
+
+% You can put more user-defined commands here
+
+\makeatletter
+\newlength{\continueindent}
+\setlength{\continueindent}{6em}
+
+\renewenvironment{algorithmic}[1][0]%
+   {%
+   \edef\ALG@numberfreq{#1}%
+   \def\@currentlabel{\theALG@line}%
+   %
+   \setcounter{ALG@line}{0}%
+   \setcounter{ALG@rem}{0}%
+   %
+   \let\\\algbreak%
+   %
+   \expandafter\edef\csname ALG@currentblock@\theALG@nested\endcsname{0}%
+   \expandafter\let\csname ALG@currentlifetime@\theALG@nested\endcsname\relax%
+   %
+   \begin{list}%
+      {\ALG@step}%
+      {%
+      \rightmargin\z@%
+      \itemsep\z@ \itemindent\z@ \listparindent2em%
+      \partopsep\z@ \parskip\z@ \parsep\z@%
+      \labelsep 0.5em \topsep 0.2em%\skip 1.2em 
+      \ifthenelse{\equal{#1}{0}}%
+         {\labelwidth 0.5em}%
+         {\labelwidth 1.2em}%
+       \leftmargin\labelwidth \addtolength{\leftmargin}{\labelsep}
+      \ALG@tlm\z@%
+      }%
+      \parshape 2 \leftmargin \linewidth \continueindent \dimexpr\linewidth-\continueindent\relax
+   \setcounter{ALG@nested}{0}%
+   \ALG@beginalgorithmic%
+   }%
+   {% end{algorithmic}
+   % check if all blocks are closed
+   \ALG@closeloops%
+   \expandafter\ifnum\csname ALG@currentblock@\theALG@nested\endcsname=0\relax%
+   \else%
+      \PackageError{algorithmicx}{Some blocks are not closed!!!}{}%
+   \fi%
+   \ALG@endalgorithmic%
+   \end{list}%
+   }%
+\makeatother
+
+\renewcommand{\thealgorithm}{}
+
+\newenvironment{solution}
+  {\renewcommand\qedsymbol{$\blacksquare$}\begin{proof}[Solution]}
+  {\end{proof}}
+  
+\begin{document}
+
+\hrule
+\begin{center}
+    \textbf{CS91T: Computational Geometry}\hfill \textbf{Fall 2023}\newline
+
+    {\Large Homework 3}
+
+    David Yang and Nick Fettig
+\end{center}
+
+\hrule
+
+\vspace{1em}
+
+\begin{enumerate}
+    \item\textbf{Prove that if $e\leq0$ and $v\leq1$ are integers with $e\leq \frac{v(v-1)}{2}$, then there is a graph with $v$ vertices, $e$ edges, and at most $e^3/v^2$ crossings.} 
+
+\begin{solution}
+We define an explicit construction as follows. Space out the $v$ vertices equally along the circumference of a unit circle, and order them  $a_1$ to $a_v$ by clockwise order. We define the $i^{\text{th}}$, for $i \geq 1$, generation of edges in our construction to be the edges $\overline{a_{j} a_{(j+i) \, \% v}}$ for each $j$ from $1$ to $v$. For example, the first generation of edges constitutes the boundary of an $n$-gon.\\
+
+If our graph $G$ has $e$ edges, then we require at most  $\left\lfloor\frac{e}{n}\right\rfloor + 1$\footnote{every generation consists of $n$ edges, besides generation n/2 when $n$ is even — this case is still handled by the $+1$ term in the expression} generations in our construction. We will bound the crossing number of $G$ by bounding the number of crosses for each of the $e$ edges in our construction.  \\
+
+Consider any of the $e$ edges in our graph. Since we have completed at most $\left\lfloor\frac{e}{n}\right\rfloor + 1$ generations in our construction, each edge must have at most $\left(\left\lfloor\frac{e}{n}\right\rfloor + 1\right) - 1 = \left\lfloor\frac{e}{n}\right\rfloor$ vertices between them. Each of these vertices also has at most $\left\lfloor\frac{e}{n}\right\rfloor$ interior (not counting the boundary) edges with it as an endpoint in our $n$-gon since each generation creates one interior edge from a given vertex. Thus, the crossing number is bounded by the number of edges multiplied by the maximum number of crossings per edge:
+\[ \mathrm{Cr}(G) \leq e\left( \left\lfloor\frac{e}{n}\right\rfloor \right) \left( \left\lfloor\frac{e}{n}\right\rfloor \right) = e \left( \left\lfloor\frac{e}{n}\right\rfloor \right)^2.\]
+
+Clearly, since $\left\lfloor\frac{e}{n}\right\rfloor \leq \frac{e}{n}$, we find that
+\[ \mathrm{Cr}(G) \leq e \left( \left\lfloor\frac{e}{n}\right\rfloor \right)^2 \leq e \left( \frac{e}{n}\right)^2 = \frac{e^3}{n^2}\]
+
+as desired. 
+\end{solution}
+
+    \newpage
+    
+    \item \textbf{The Sierpinksi right triangle is defined recursively as follows: at stage $0$, make a solid right triangle of height $1$ and base length $1$. At stage $n$, for each positive integer $n$, slice each solid triangle of height $2^{1-n}$ into four congruent triangles of height $2^{-n}$ and remove the interior of the middle one.} \\
+    
+    \textbf{Prove that there is some $\log_2 3$-gale $d$ with the following property: for all points $p$ in the right Sierpinski triangle, there is an infinite sequence $q_0 \supset q_1 \dots $ of nested dyadic squares such that $p \in \bigcap_{n \in \mathbb{N}} q_n$ and $d(q_n) = \Omega(1)$.}
+
+    \begin{solution}
+    We claim that the gale $d$ with $d\left(q_{i}^{\ulcorner}\right) = d(q_{i}^{\llcorner}) = d(q_{i}^{\lrcorner}) = 1$ and $d\left(q_i^\urcorner\right) = 0$ where each of $q_{i}^{\ulcorner}, q_{i}^{\llcorner}, q_{i}^{\lrcorner},$ and $q_{i}^{\urcorner}$ represent the four dyadic subsquares of $q_i$ is a $\log_2 3$-gale with the desired properties. We will prove this inductively, on the generation number $n$. \\
+
+    For our base case(s), note that $d(q_0) = 1$ holds by definition. For the inductive step, assume that $d(q_k) = \Omega(1)$ for some $k \in \mathbb{N}$. We want to show that $d(q_{k+1}) = \Omega(1).$ 
+    
+    By definition, \begin{align*} d(q_{k+1}) &= 2^{-\log_2 3} \left( d\left(q_{k}^{\ulcorner}\right) + d(q_{k}^{\llcorner}) + d(q_{k}^{\lrcorner}) + d\left(q_{k}^{\urcorner}\right)\right) \\
+    &= \frac{1}{3} (3 \Omega(1) + 0) = \Omega(1) \end{align*}
+
+    and so $d(q_{k+1}) = \Omega(1)$, as desired. Furthermore, this is indeed a $\log_2 3$-gale. \\
+    
+    Thus, by induction, we know that the above gale is a $\log_2 3$-gale $d$ satisfying the property that for all points $p$ in the right Sierpinski triangle, there is an infinite sequence $q_0 \supset q_1 \dots $ of nested dyadic squares such that $p \in \bigcap_{n \in \mathbb{N}} q_n$ and $d(q_n) = \Omega(1)$.
+    \end{solution}
+
+    \newpage
+    
+    \item\textbf{Use the Szemeredi-Trotter theorem to prove that if $P$ is any set of $n$ points in the plane, then there are $O(n^{4/3})$ pairs of points in $P$ that are at distance exactly 1 from each other:}
+    \[|\{(p,q) \in P^2:||p-q||=1\}|=O(n^{4/3})\]
+
+    \begin{solution} Let us begin by creating a set of circles, $C$, each of radius 1, centered at each point in $P$. Note that a pair of points in $P$ separated by a unit distance corresponds directly to two point-circle incidences between $P$ and $C$. Consequently, to bound the number of pairs of points in $P$ that are exactly a unit distance away from each other, it suffices to bound the number of point-circle incidences in $P$ and $C$. \\
+
+    It remains to show that there are $O(n^{4/3})$ point-circle incidences between $P$ and $C$, which we will prove by appealing to a modified version of the proof for the Szemeredi-Trotter Theorem. \\
+
+    Let $I$ be the number of point-circle incidences between $P$ and $C$, and let $m_i$ represent the number of points of $P$ on the boundary of circle $C_i$, which is centered at $p_i$. By definition, we have that \[ I = \sum\limits_{i=1}^n m_i.\]
+
+    We will now create a graph $G$. We remove circles with $m_i \leq 2$, i.e. circles that have two or less points on their boundary. This removes at most $2n$ incidences. Now, each individual circle is partitioned into $\geq 3$ arcs between consecutive points on that circle. We define an edge between each consecutive point; more formally, for points $q_1, q_2, \dots, q_n$ (ordered in clockwise order) around circle $P_i$, define the edges $\overline{q_1q_2}, \dots, \, \overline{q_nq_1}$, and do this for each of the $n$ circles. If there are multi-edges corresponding to edges that belong to multiple circles, remove one of their copies. We know that the number of edges, $e$, in $G$ satisfies
+    \[ e \geq \frac{\sum\limits_{i=1}^n m_i}{2} - 2n\]
+
+    where the $2n$ term comes from the fact that our first step removes at most $2n$ incidences and consequently, at most $2n$ edges. Since we know $I = \sum\limits_{i=1}^{n} m_i$ by definition, we substitute to get $e \geq \frac{I}{2} - 2n$, meaning $I \leq 2e + 4n.$ \\
+
+    We define the vertices of $G$ as the points in $P$. We now consider two cases separately to appeal to the Crossing Number Inequality. \\
+
+    Note that if $e \leq 4v$, then 
+    \[ I \leq 2e + 4n \leq 2(4n) + 4n\]
+
+    and so $I = O(n) = O(n^{4/3})$ as desired. \\
+    
+    On the other hand, if $e \geq 4v$, then we know by the Crossing Number Inequality that
+    \[ \mathrm{Cr}(G) \geq \frac{e^3}{n^2}.\]
+
+    Since $e \geq \frac{I}{2} - 2n$, we have the bound $e \geq \frac{I}{2}$. Similarly, since each pair of circles intersects at most twice, we know that $\mathrm{Cr}(G) \leq 2\binom{n}{2} \leq n^2.$ Combining these facts together, we find that
+    \[ n^2 \geq \mathrm{Cr}(G) \geq \frac{\left(\frac{I}{2}\right)^3}{n^2}.\]
+
+    Solving for $I$, we find that $I = O(n^{4/3})$. Thus, we conclude that there are $O(n^{4/3})$ pairs of points in $P$ that are at distance exactly $1$ from each other, as desired. \end{solution}
+
+\end{enumerate}
+\end{document}

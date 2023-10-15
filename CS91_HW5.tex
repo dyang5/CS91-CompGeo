@@ -1,0 +1,101 @@
+\documentclass[11pt]{article}
+\usepackage{graphics}
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{amsbsy}
+\usepackage{mathtools}
+\usepackage{algpseudocode, algorithm, algorithmicx}
+\usepackage{soul}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{float}
+\usepackage{gensymb}
+\usepackage{tabularx}
+\newcommand{\ord}[1]{\textsuperscript{#1}}
+\usepackage{ragged2e}
+\DeclareMathOperator{\DICT}{DICT}
+
+\makeatletter
+\newcommand\multiline[1]{\parbox[t]{\dimexpr\linewidth-\ALG@thistlm}{#1}}
+\makeatother
+\usepackage[margin=1in]{geometry}
+%\renewcommand{\baselinestretch}{1.2}
+\newcommand{\codepar}[2]{\begin{minipage}[t]{#1}#2\end{minipage}}
+\newcommand{\codecomt}[1]{\color{blue}\textit{// #1}\color{black}}
+
+% You can put more user-defined commands here
+
+\makeatletter
+\newlength{\continueindent}
+\setlength{\continueindent}{6em}
+
+\renewenvironment{algorithmic}[1][0]%
+   {%
+   \edef\ALG@numberfreq{#1}%
+   \def\@currentlabel{\theALG@line}%
+   %
+   \setcounter{ALG@line}{0}%
+   \setcounter{ALG@rem}{0}%
+   %
+   \let\\\algbreak%
+   %
+   \expandafter\edef\csname ALG@currentblock@\theALG@nested\endcsname{0}%
+   \expandafter\let\csname ALG@currentlifetime@\theALG@nested\endcsname\relax%
+   %
+   \begin{list}%
+      {\ALG@step}%
+      {%
+      \rightmargin\z@%
+      \itemsep\z@ \itemindent\z@ \listparindent2em%
+      \partopsep\z@ \parskip\z@ \parsep\z@%
+      \labelsep 0.5em \topsep 0.2em%\skip 1.2em 
+      \ifthenelse{\equal{#1}{0}}%
+         {\labelwidth 0.5em}%
+         {\labelwidth 1.2em}%
+       \leftmargin\labelwidth \addtolength{\leftmargin}{\labelsep}
+      \ALG@tlm\z@%
+      }%
+      \parshape 2 \leftmargin \linewidth \continueindent \dimexpr\linewidth-\continueindent\relax
+   \setcounter{ALG@nested}{0}%
+   \ALG@beginalgorithmic%
+   }%
+   {% end{algorithmic}
+   % check if all blocks are closed
+   \ALG@closeloops%
+   \expandafter\ifnum\csname ALG@currentblock@\theALG@nested\endcsname=0\relax%
+   \else%
+      \PackageError{algorithmicx}{Some blocks are not closed!!!}{}%
+   \fi%
+   \ALG@endalgorithmic%
+   \end{list}%
+   }%
+\makeatother
+
+\newcommand{\CH}{\mathrm{CH}}
+\renewcommand{\thealgorithm}{}
+
+\newenvironment{solution}
+  {\renewcommand\qedsymbol{$\blacksquare$}\begin{proof}[Solution]}
+  {\end{proof}}
+  
+\begin{document}
+
+\hrule
+\begin{center}
+    \textbf{CS91T: Computational Geometry}\hfill \textbf{Fall 2023}\newline
+
+    {\Large Homework 5}
+
+    David Yang and Nick Fettig
+\end{center}
+
+\hrule
+
+\vspace{1em}
+
+
+
+
+\end{document}

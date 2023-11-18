@@ -1,0 +1,186 @@
+\documentclass[11pt]{article}
+\usepackage{graphics}
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{amsbsy}
+\usepackage{mathtools}
+\usepackage{algpseudocode, algorithm, algorithmicx}
+\usepackage{soul}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{float}
+\usepackage{gensymb}
+\usepackage{tabularx}
+\newcommand{\ord}[1]{\textsuperscript{#1}}
+\usepackage{ragged2e}
+\DeclareMathOperator{\DICT}{DICT}
+
+
+\graphicspath{ {./images/HW5/} }
+
+
+\makeatletter
+\newcommand\multiline[1]{\parbox[t]{\dimexpr\linewidth-\ALG@thistlm}{#1}}
+\makeatother
+\usepackage[margin=1in]{geometry}
+%\renewcommand{\baselinestretch}{1.2}
+\newcommand{\codepar}[2]{\begin{minipage}[t]{#1}#2\end{minipage}}
+\newcommand{\codecomt}[1]{\color{blue}\textit{// #1}\color{black}}
+
+% You can put more user-defined commands here
+
+\makeatletter
+\newlength{\continueindent}
+\setlength{\continueindent}{6em}
+
+\renewenvironment{algorithmic}[1][0]%
+   {%
+   \edef\ALG@numberfreq{#1}%
+   \def\@currentlabel{\theALG@line}%
+   %
+   \setcounter{ALG@line}{0}%
+   \setcounter{ALG@rem}{0}%
+   %
+   \let\\\algbreak%
+   %
+   \expandafter\edef\csname ALG@currentblock@\theALG@nested\endcsname{0}%
+   \expandafter\let\csname ALG@currentlifetime@\theALG@nested\endcsname\relax%
+   %
+   \begin{list}%
+      {\ALG@step}%
+      {%
+      \rightmargin\z@%
+      \itemsep\z@ \itemindent\z@ \listparindent2em%
+      \partopsep\z@ \parskip\z@ \parsep\z@%
+      \labelsep 0.5em \topsep 0.2em%\skip 1.2em 
+      \ifthenelse{\equal{#1}{0}}%
+         {\labelwidth 0.5em}%
+         {\labelwidth 1.2em}%
+       \leftmargin\labelwidth \addtolength{\leftmargin}{\labelsep}
+      \ALG@tlm\z@%
+      }%
+      \parshape 2 \leftmargin \linewidth \continueindent \dimexpr\linewidth-\continueindent\relax
+   \setcounter{ALG@nested}{0}%
+   \ALG@beginalgorithmic%
+   }%
+   {% end{algorithmic}
+   % check if all blocks are closed
+   \ALG@closeloops%
+   \expandafter\ifnum\csname ALG@currentblock@\theALG@nested\endcsname=0\relax%
+   \else%
+      \PackageError{algorithmicx}{Some blocks are not closed!!!}{}%
+   \fi%
+   \ALG@endalgorithmic%
+   \end{list}%
+   }%
+\makeatother
+
+\newcommand{\CH}{\mathrm{CH}}
+\renewcommand{\thealgorithm}{}
+
+\newenvironment{solution}
+  {\renewcommand\qedsymbol{$\blacksquare$}\begin{proof}[Solution]}
+  {\end{proof}}
+  
+\begin{document}
+
+\hrule
+\begin{center}
+    \textbf{CS91T: Computational Geometry}\hfill \textbf{Fall 2023}\newline
+
+    {\Large Homework 6}
+
+    David Yang and Nick Fettig
+\end{center}
+
+\hrule
+
+\vspace{1em}
+
+
+\begin{enumerate}
+\item \textbf{Let E2S be the problem of determining, given a graph $G = (V, E)$ and a positive integer $k$, whether there is a set $S \subset V$ such that $|S| = k$ and for all distinct $u, v \in S$, the length of the shortest path between $u$ and $v$ is exactly two. Prove that IS $\leq_p$ E2S.}
+
+\begin{solution}
+Consider an instance of IS, $(G(V, E), k)$. Define a new graph $G'$ with all vertices in $V$ and an additional vertex $v^{\ast}.$ Furthermore, define the edges of $G'$ to be the edges $E$, and edges between each vertex in $V$ to $v^{\ast}$. Formally, $G'$ is a graph with
+\begin{itemize}
+    \item vertex set $V' = V \cup v^{\ast}$
+    \item edge set $E' = E \cup \{\overline{vv^{\ast}} \mid v \in V\}$
+\end{itemize}
+
+Note that this is a transformation that can clearly be implemented in polynomial time in the number of edges and vertices.\\
+
+We claim that $(G, k)$ is in IS if and only if $(G', k)$ is in E2S. \\
+
+For the forward implication, note that for any two vertices $u, v$ in an independent set of $G$, the minimum length between $u$ and $v$ is by definition $\geq 2$. Furthermore, with the construction of $v^{\ast}$, there is a path $u-v^{\ast}-v$ of length $2$ in $G'$, so the length between any two vertices $u, v$ in the same set of vertices in $G'$ is exactly $2$. Thus, if $(G, k)$ is in IS, then $(G', k)$ is in E2S. \\
+
+For the reverse implication, consider some set $S \subset V'$ in $G'$ with $|S| = k$ satisfying E2S. Consider any vertices $u, v$ in $S$. By definition, the minimum length between $u$ and $v$ is two, and so the length between $u$ and $v$ in the graph $G$ must be greater than or equal to $2$. Consequently, any vertices in some set $S$ satisfying E2S will also be vertices in some independent set in $G$.\footnote{this also follows since $v^{\ast}$ cannot be in this E2S set, since the distance between $v^{\ast}$ and every other vertex in $G'$ is one by construction.} Thus, if $(G', k)$ is in E2S then $(G, k)$ is in IS.  \end{solution}
+
+\newpage
+
+\item \textbf{Consider the two following decision problems.} \\
+
+\textbf{PARTITION: Given a set $X$ of positive integers, can $X$ can be partitioned into two sets $L$
+and $R$ (meaning $L \cap R = \emptyset $  and $L \cup R = X$) such that} \[ \sum\limits_{\ell \in L} \ell = \sum\limits_{r \in R} r?\]
+
+\textbf{KNAPSACK: Given a list of $n$ positive weights $w_1, \dots, w_n$, $n$ positive values $v_1, \dots, v_n$, a
+positive capacity $W$, and a target value $V$ , is there a subset $S \subseteq \{1, \dots, n\}$ such that}
+\[ \sum\limits_{i \in S} w_i \leq W \text{ and } \sum\limits_{i \in S} v_i \geq V?\]
+\textbf{Prove that PARTITION $\leq_p$ KNAPSACK.}
+
+\begin{solution}
+Consider an instance of PARTITION defined by a set $X$ of positive integers $X = \{x_1, \dots, x_n\}$ which has sum $T = \sum\limits_{i=1}^n x_i.$ Define an instance of KNAPSACK with a list of $n$ positive weights and values as follows:\[ \{w_1 = v_1 = x_1, w_2 = v_2 = x_2, \dots, w_n = v_n = x_n\}\] and $W = V = \frac{T}{2}$, which is a transformation that can be done in $O(n)$ time. \\
+
+We claim that $X$ is in PARTITION if and only if the designed instance is in KNAPSACK. \\
+
+For the forward implication, note that if $X$ is in PARTITION, $X$ can be partitioned into two sets $L, R$ with equal sum. By definition, this sum must be equal to half the total sum of the elements of $X$, which is simply $\frac{T}{2}$. Since the weights and values are defined as the elements in $X$, $S = L$ is a subset satisfying KNAPSACK with $W = V = \frac{T}{2}$ and the defined list. \\
+
+For the reverse implication, note that if there is a subset $S \subset \{1, \dots, n\}$ satisfying \[ \sum\limits_{i \in S} w_i \leq W \text{ and } \sum\limits_{i \in S} v_i \geq V\] with $W = V = \frac{T}{2}$, then the subsets $S$ and $\{1, \dots, n\} \setminus S$ are the corresponding indices for the sets $L$ and $R$ satisfying PARTITION, with the original set $X$. 
+\end{solution}
+
+\newpage
+
+\item \textbf{We define a geometric knapsack problem GEOKNAP as follows. The input consists of a set
+of $n$ small polygons $\mathcal{P}_1, \dots, \mathcal{P}_n$ each given by clockwise lists of their vertices; a value $v_i$ for each polygon $\mathcal{P}_i$; a big polygon $\mathcal{Q}$; and a target value $V$. The question is whether there is some set of small polygons with total value $\geq V$ that can fit inside $\mathcal{Q}$ without overlapping, assuming that we are allowed to translate or rotate the polygons. Prove that KNAPSACK $\leq_p$ GEOKNAP.}
+
+\begin{solution}
+Consider an instance $K$ of KNAPSACK defined by a list of $n$ positive weights and values $w_1, \dots, w_n$ and $v_1, \dots, v_n$ with a positive capacity $W$ and target value $V$. Define an instance $G$ of GEOKNAP defined by 
+\begin{itemize}
+\item a set of $n$ rectangles $\mathcal{P}_1, \dots, \mathcal{P}_n$ each of which has dimension \[\left(\min\limits_{i \in \{1, \dots, n\}} w_i\right) \times w_i.\]
+\item a big polygon $\mathcal{Q}$ of size $1 \times W$
+\item a target value $V$
+\end{itemize}
+
+where $W, V$ are the same values as defined in the instance of KNAPSACK. This is a transformation that can be done in $O(n)$ time. \\
+
+We claim that $K$ is in KNAPSACK if and only if $G$ is in GEOKNAP. \\
+
+For the forward implication, note that $K$ being in KNAPSACK implies a subset $S \subseteq \{1, \dots, n\}$ with \[ \sum\limits_{i \in S} w_i \leq W \text{ and } \sum\limits_{i \in S} v_i \geq V.\]
+
+By construction, then, the set $SP = \{\mathcal{P}_i \mid i \in S\}$ is a set of small polygons that can fit inside $\mathcal{Q}$ (since the sum of widths of elements in $SP$ is less than $W$) that also has total sum $\geq V$ by definition; thus, $G$ is in GEOKNAP. \\
+
+For the reverse implication, consider some set $SP$ of rectangles $\mathcal{P}_i$ (with the previously defined $W, V$ and list of weights and values) satisfying GEOKNAP. Note that rotations of these rectangles force them out of $\mathcal{Q}$, so we know that the axes of each rectangle lie parallel to the axes of $\mathcal{Q}.$ Consequently, since the rectangles in $SP$ fit in $\mathcal{Q}$, we must have that \[ \sum\limits_{i \in SP} w_i \leq W.\] Furthermore, since their values sum to a total value $\geq V$, \[\sum\limits_{i \in SP} v_i \geq V\] is also satisfied. Thus, by definition, the set $S$ of the indices of rectangles is part of an instance $K$ in KNAPSACK. \end{solution}
+
+\newpage
+
+\item{\textbf{Define the problem TRIHIT as follows. The input consists of a set $T$ of $m$ triangles, each
+given by its vertices, a set $P$ of $n$ points, and a parameter $k$. The question is whether there
+is a subset $S \subseteq P$ of cardinality $k$ such that each triangle in $T$ has some point from $S$ in its
+interior. Prove that IS $\leq_p$ TRIHIT.}}
+
+\begin{solution} First, note that IS $\leq_p$ VC. We claim that $S\subset V$ be a vertex cover in $G$ if and only if $V \setminus S$ is an independent set in $G$. This follows directly from the definitions of vertex cover and independent set. A vertex cover $S$ must ``hit" every edge, in the sense that every edge has an endpoint in $S$. Consequently, $V \setminus S$ is a set containing at most one endpoint of every edge, which is an independent set of $G$ by definition. \\
+
+Since IS $\leq_p$ VC, to show IS $\leq_p$ TRIHIT, it suffices to show that VC $\leq_p$ TRIHIT. Consider an instance of VC, defined by a graph $G$ with vertex set $V$ and edge set $E$, and the parameter $k$ representing the size of a potential vertex set. \\
+
+For each edge $e_i \in E$, create a triangle defined by three vertices $v_{i_1}, v_{i_2}, v_{i_3}$, and two points $p_{i_1}, p_{i_2}$ such that $\overline{p_{i_1}p_{i_2}}$ is enclosed in the interior of this triangle. This transformation can be implemented in $O(|E|)$ time, and yields an instance of TRIHIT with input set $T$ consisting of $|E|$ triangles, a set $P$ of $2|E|$ points, and the same parameter $k$ as the instance of VC. \\
+
+We claim that $(G, k)$ is in VC if and only if this new $(T, P, k)$ is in TRIHIT. \\
+
+For the forward implication, note that if $(G, k)$ is in VC, there is some vertex cover of size $k$ in $G$, which includes at least one endpoint of every edge in $G$; by construction, this means that each of our constructed triangles has at least one point (representing the endpoints of an edge) in its interior. Thus, if $(G, k)$ is in VC, then $(T, P, k)$ is in TRIHIT. \\
+
+For the reverse implication, note that if $(T, P, k)$ is in TRIHIT, then is some subset $S \subseteq P$ of cardinality $k$ such that each triangle in $T$ contains a point from $S$ in its interior. By construction, then, this means that every edge in $E$ has one of its endpoints represented in $S$, and thus, $G$ must have a valid vertex cover of size $k$, i.e. $(G, k)$ is in VC. \end{solution}
+
+\end{enumerate}
+\end{document}

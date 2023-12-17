@@ -25,7 +25,7 @@ class PolygonDrawer:
         self.ax.plot(0, 10, 'ro')
         self.ax.plot(10, 0, 'ro')
         self.ax.plot(10, 10, 'ro')
-        
+
         self.fig.gca().set_aspect('equal')
 
 
@@ -64,11 +64,14 @@ class PolygonDrawer:
                         break
                     
                 if not isContained:
-                    print("NOT CONTAINED")        
+                    print("Chosen point is not a valid vertex. Pick a valid vertex.")        
 
             elif event.button == 3:
                 print(self.current_polygon_vertices)
-                self.create_polygon(self.current_polygon_vertices)
+                if (len(self.current_polygon_vertices) < 3):
+                    print("Need at least 3 vertices.")
+                else:
+                    self.create_polygon(self.current_polygon_vertices)
 
 
         elif not self.adding_vertices and event.button == 3:  # Right mouse button
@@ -83,8 +86,7 @@ class PolygonDrawer:
                 print("Adding convex polygon partitions.")
     
     def create_polygon(self, coordinateLst):
-
-        self.partitions.append(Polygon(coordinateLst, closed=True, edgecolor='b'))
+        self.partitions.append(Polygon(coordinateLst, closed=True, facecolor = 'white', edgecolor='black'))
         self.ax.add_patch(self.partitions[len(self.partitions) - 1])
         self.fig.canvas.draw()
         

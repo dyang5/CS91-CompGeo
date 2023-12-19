@@ -7,8 +7,9 @@ from matplotlib.collections import PatchCollection
 class PolygonDrawer:
     def __init__(self):
         self.fig, self.ax = plt.subplots()
+
+        # set up
         self.partitions = []
-        self.polygon = None
         self.patches = []
         self.vertex_patches = []
         self.adding_vertices = True
@@ -18,9 +19,13 @@ class PolygonDrawer:
         self.current_polygon_vertices = []
         self.undo_stack = []
 
+        # plot visualizer
+        self.ax.set_axis_off()
         self.ax.set_title("Circularity of Partitions Visualizer")
         self.ax.set_xlim(-1, 11)
         self.ax.set_ylim(-1, 11)
+
+        # user input
         self.fig.canvas.mpl_connect('button_press_event', self.on_click)
         self.fig.canvas.mpl_connect('key_press_event', self.on_key)
 
@@ -42,27 +47,26 @@ class PolygonDrawer:
 
                 for vertex in self.vertex_patches:
 
-                    # may need case where same vertex is clicked twice
-
-                    # use transformed coordinates (coordinates are different once added to plot) --  debugging took 1 hour lol
+                    # use transformed coordinates (coordinates are different once added to plot)
                     if vertex.contains_point(self.ax.transData.transform((xCoord, yCoord))):
                         isContained = True
                         self.current_polygon_vertices.append(vertex.center)
                         break
                     
                 if not isContained:
-                    print("Chosen point is not a valid vertex. Pick a valid vertex.")        
+                    print("Chosen point is not a valid vertex. Pick a valid vertex.")
 
             elif event.button == 3:
                 print(self.current_polygon_vertices)
                 if (len(self.current_polygon_vertices) < 3):
-                    print("Need at least 3 vertices.")
+                    print("Need at least 3 vertices. Repick at least 3 vertices for polygon.")
                 else:
                     self.create_polygon(self.current_polygon_vertices)
-                    self.current_polygon_vertices = [ ]
+                # reset polygon vertices
+                self.current_polygon_vertices = []
 
 
-        elif not self.adding_vertices and event.button == 3:  # Right mouse button
+        elif not self.adding_vertices and event.button == 3:
             self.finish_polygon()
 
     def on_key(self, event):
@@ -78,17 +82,21 @@ class PolygonDrawer:
         elif event.key == 'z':
             self.undo()
 
-        # set up phase
+        # set up visualization
         elif event.key == 't':
             self.setup()
 
-    def setup(self):
+        # when done adding polygons
+        elif event.key == 'd':
+            self.circularity()
+
+    def setup(self):  
         vertex_coordinates = [(0, 0), [0, 10], [10, 0], [10, 10]]
         self.vertices.append(vertex_coordinates)
 
         for coord in vertex_coordinates:
             x, y = coord
-            vertex = mpl.patches.Circle((x, y), radius = 0.1, color = 'red', zorder = 1000)
+            vertex = mpl.patches.Circle((x, y), radius = 0.1, color = 'red', zorder = 1000) # zorder gives priority to vertices, so they don't get blocked by polygons
             vertex.center = coord
             self.vertex_patches.append(vertex)
 
@@ -106,13 +114,17 @@ class PolygonDrawer:
         self.partitions.append(Polygon(coordinateLst, closed=True, facecolor = 'white', edgecolor='black'))
         self.patches.append(self.partitions[len(self.partitions) - 1])
         self.ax.add_patch(self.partitions[len(self.partitions) - 1])
+
         self.fig.canvas.draw()
         self.save_state()
+
+        centroid = np.average(coordinateLst, axis=0)
+        self.add_label(centroid[0], centroid[1], len(self.partitions))
         
 
     def add_point(self, x, y):
         self.vertices.append((x, y))
-        vertex = mpl.patches.Circle((x, y), radius = 0.1, color = 'red', zorder = 1000) # (zorder gives priority to patches), so they don't get blocked by polygons
+        vertex = mpl.patches.Circle((x, y), radius = 0.1, color = 'red', zorder = 1000) 
         vertex.center = (x, y)
         self.vertex_patches.append(vertex)
 
@@ -121,15 +133,15 @@ class PolygonDrawer:
         self.fig.canvas.draw()
         self.save_state()
 
-    # keep track of states in stack
+    # keep track of states in "stack"
     def save_state(self):
         self.undo_stack.append((self.vertices.copy(), self.partitions.copy()))
 
     # undo last action
     def undo(self):
         if self.undo_stack:
+            self.vertices, self.partitions = self.undo_stack.pop()
             self.setup()
-
             for vertex in self.vertex_patches:
                 self.ax.add_patch(vertex)
 
@@ -140,6 +152,34 @@ class PolygonDrawer:
             print("Undo complete.")
         else:
             print("Nothing to undo.")
+
+    def add_label(self, x, y, label):
+        self.ax.text(x, y, label, fontsize=5, color='black', ha='center', va='center')
+        self.fig.canvas.draw()
+        self.save_state()         
+
+    def circularity(self):
+        print("1")
+
+        # think about how to calculate circiumradius and inradius
+        # https://math.stackexchange.com/questions/1948356/largest-incircle-inside-a-quadrilateral-radius-calculation (radius of largest indisk)
+        # (finding smallest circumscribing circle
+        # is this an instance of smallest circle problem?
+        # https://www.nayuki.io/res/smallest-enclosing-circle/smallestenclosingcircle.py
+        # https://math.stackexchange.com/questions/1835931/largest-enclosed-inscribed-circle-in-cloud-of-points
+
+        for poly in self.partitions:
+            coordinateLst = poly.get_xy()
+            area = self.shoelace()
+
+            # determine smallest circumscribing circle
+
+            # determine largest indisk
+
+
+    def shoelace(self, coordinateLst):
+        return 1
+
 
 if __name__ == "__main__":
     drawer = PolygonDrawer()

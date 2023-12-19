@@ -74,6 +74,10 @@ class PolygonDrawer:
             else:
                 print("Adding convex polygon partitions.")
 
+        # undo button
+        elif event.key == 'z':
+            self.undo()
+
         # set up phase
         elif event.key == 't':
             self.setup()
@@ -84,7 +88,7 @@ class PolygonDrawer:
 
         for coord in vertex_coordinates:
             x, y = coord
-            vertex = mpl.patches.Circle((x, y), radius = 0.1, color = 'red')
+            vertex = mpl.patches.Circle((x, y), radius = 0.1, color = 'red', zorder = 1000)
             vertex.center = coord
             self.vertex_patches.append(vertex)
 
@@ -108,41 +112,23 @@ class PolygonDrawer:
 
     def add_point(self, x, y):
         self.vertices.append((x, y))
-        vertex = mpl.patches.Circle((x, y), radius = 0.1, color = 'red')
+        vertex = mpl.patches.Circle((x, y), radius = 0.1, color = 'red', zorder = 1000) # (zorder gives priority to patches), so they don't get blocked by polygons
         vertex.center = (x, y)
         self.vertex_patches.append(vertex)
 
         self.patches.append(vertex)
-        self.ax.add_patch(self.patches[len(self.patches) - 1]) # (zorder gives priority to patches)
+        self.ax.add_patch(self.patches[len(self.patches) - 1]) 
         self.fig.canvas.draw()
         self.save_state()
-
-
-    # def start_polygon(self, x, y):
-    #     self.polygon = [((x, y))]
-    #     self.patches = [Polygon(self.polygon, closed=False, edgecolor='r')]
-    #     self.ax.add_collection(PatchCollection(self.patches, facecolors='b', edgecolors='r'))
-    #     self.fig.canvas.draw()
-
-    # def finish_polygon(self):
-    #     if self.polygon is not None:
-    #         self.polygon.append(self.polygon[0])
-    #         self.patches[0] = Polygon(self.polygon, closed=True, edgecolor='r')
-    #         self.ax.add_collection(PatchCollection(self.patches, facecolors='b', edgecolors='r'))
-    #         self.fig.canvas.draw()
-    #         self.polygon = None
 
     # keep track of states in stack
     def save_state(self):
         self.undo_stack.append((self.vertices.copy(), self.partitions.copy()))
 
+    # undo last action
     def undo(self):
         if self.undo_stack:
-            self.vertices, self.partitions = self.undo_stack.pop()
-            self.ax.cla()
-            self.ax.set_title("Circularity of Partitions Visualizer")
-            self.ax.set_xlim(-1, 11)
-            self.ax.set_ylim(-1, 11)
+            self.setup()
 
             for vertex in self.vertex_patches:
                 self.ax.add_patch(vertex)

@@ -1,10 +1,15 @@
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-import smallestcircumscribingcircle
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
 from scipy.spatial import Voronoi, voronoi_plot_2d
+from shapely.geometry import Point, Polygon
+
+import smallestcircumscribingcircle
+import chebyshevcenter
+
+
 
 class PolygonDrawer:
     def __init__(self):
@@ -113,7 +118,7 @@ class PolygonDrawer:
         self.fig.canvas.draw()
     
     def create_polygon(self, coordinateLst):
-        self.partitions.append(Polygon(coordinateLst, closed=True, facecolor = 'white', edgecolor='black'))
+        self.partitions.append(mpl.patches.Polygon(coordinateLst, closed=True, facecolor = 'white', edgecolor='black', zorder = 10))
         self.patches.append(self.partitions[len(self.partitions) - 1])
         self.ax.add_patch(self.partitions[len(self.partitions) - 1])
 
@@ -172,7 +177,7 @@ class PolygonDrawer:
         # https://www.nayuki.io/res/smallest-enclosing-circle/smallestenclosingcircle.py
         # https://math.stackexchange.com/questions/1835931/largest-enclosed-inscribed-circle-in-cloud-of-points (find Voronoi vertex that maximizes the distance to closest site)
 
-        min_circularity = float('inf')
+        max_circularity = -1
         min_circularity_index = 0
         circularities = []
         circumcircles = []
@@ -180,36 +185,47 @@ class PolygonDrawer:
 
         for poly in self.partitions:
             coordinateLst = poly.get_xy()
-
             # determine smallest circumscribing circle
             circum = smallestcircumscribingcircle.make_circle(coordinateLst)
             circumcircles.append(circum)
             circumcircle_radii = circum[2]
 
-            # determine largest indisk
-            vor = Voronoi(coordinateLst)
-            largest_min_distance = float('inf')
-            optimal_vertex = None
+            boundary_polygon = Polygon(coordinateLst)
 
-            for voronoi_vertex in vor.vertices:
-                min_distance = float('inf')
-                for coordinate in coordinateLst:
-                    min_distance = min(np.linalg.norm(coordinate - voronoi_vertex), min_distance)
-                if min_distance < largest_min_distance:
-                    largest_min_distance = min_distance
-                    optimal_vertex = voronoi_vertex
-                indisks.append((optimal_vertex[0], optimal_vertex[1], largest_min_distance))
+            chebyshev_center = chebyshevcenter.find_chebyshev_center(coordinateLst)
+            indisk_radii = boundary_polygon.exterior.distance(Point(chebyshev_center))
 
-            indisk_radii = largest_min_distance
+                # # determine largest indisk
+                # vor = Voronoi(coordinateLst)
+                # largest_min_distance = float('inf')
+                # optimal_vertex = None
+
+
+                # for voronoi_vertex in vor.vertices:
+                #     min_distance = boundary_polygon.exterior.distance(Point(voronoi_vertex))
+                #     if min_distance < largest_min_distance:
+                #         largest_min_distance = min_distance
+                #         optimal_vertex = voronoi_vertex
+
+
+                # indisk_radii = boundary_polygon.exterior.distance(Point(optimal_vertex))
+            
+            indisk = (chebyshev_center[0], chebyshev_center[1], indisk_radii)
+            self.ax.add_patch(mpl.patches.Circle((indisk[0], indisk[1]), radius = indisk[2], edgecolor = 'red', facecolor='white', zorder = 15))
+            self.fig.canvas.draw()
+
+            self.ax.add_patch(mpl.patches.Circle((circum[0], circum[1]), radius = circum[2], edgecolor = 'blue', facecolor='white', zorder = 9))
+
+            self.fig.canvas.draw()
+            indisks.append(indisk)
 
             circularity = circumcircle_radii / indisk_radii
             circularities.append(circularity)
-            if circularity < min_circularity:
-                min_circularity = circularity
-                min_circularity_index = len(circularities) - 1
+            if circularity > max_circularity:
+                max_circularity = circularity
+                max_circularity_index = len(circularities) - 1
 
         print(circularities)
-        print(min_circularity)
 
 if __name__ == "__main__":
     drawer = PolygonDrawer()

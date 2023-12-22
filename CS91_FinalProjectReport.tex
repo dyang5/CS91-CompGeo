@@ -45,9 +45,17 @@ In summary, the problem is as follows:
 
 Calculating the circularity is difficult. 
 
+Related to Smallest Enclosing circle
+
+and Largest Empty Circle (but LEC finds largest circle not containing vertices), while we care about circle not hitting any edges.
+This is a problem of finding the Voronoi diagram of edges (discussed in de Berg), or the medial axis of the given polygon. However, there were no implementations online so I used a brute force algorithm.
 \section{Approach and Methodology}
 
 \newpage
+
+\section{Future Work: Extensions}
+
+We focus on square, but can extend to any polygon. Idea: place points equally spaced on circle, to form bounding polygon. 
 
 \begin{thebibliography}{9}
     \bibitem{topp}

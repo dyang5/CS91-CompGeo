@@ -13,7 +13,7 @@ class PolygonDrawer:
         self.patches = []
         self.vertex_patches = []
         self.adding_vertices = True
-        self.vertices = []
+        # self.vertices = []
         self.current_polygon_x = []
         self.current_polygon_y = []
         self.current_polygon_vertices = []
@@ -92,7 +92,7 @@ class PolygonDrawer:
 
     def setup(self):  
         vertex_coordinates = [(0, 0), [0, 10], [10, 0], [10, 10]]
-        self.vertices.append(vertex_coordinates)
+        # self.vertices.append(vertex_coordinates)
 
         for coord in vertex_coordinates:
             x, y = coord
@@ -123,7 +123,7 @@ class PolygonDrawer:
         
 
     def add_point(self, x, y):
-        self.vertices.append((x, y))
+        # self.vertices.append((x, y))
         vertex = mpl.patches.Circle((x, y), radius = 0.1, color = 'red', zorder = 1000) 
         vertex.center = (x, y)
         self.vertex_patches.append(vertex)
@@ -135,12 +135,14 @@ class PolygonDrawer:
 
     # keep track of states in "stack"
     def save_state(self):
-        self.undo_stack.append((self.vertices.copy(), self.partitions.copy()))
+        self.undo_stack.append((self.vertex_patches.copy(), self.partitions.copy()))
 
     # undo last action
     def undo(self):
-        if self.undo_stack:
-            self.vertices, self.partitions = self.undo_stack.pop()
+        if len(self.undo_stack) >= 2:
+            self.undo_stack.pop()
+            self.vertex_patches, self.partitions = self.undo_stack.pop()
+
             self.setup()
             for vertex in self.vertex_patches:
                 self.ax.add_patch(vertex)
@@ -156,7 +158,7 @@ class PolygonDrawer:
     def add_label(self, x, y, label):
         self.ax.text(x, y, label, fontsize=5, color='black', ha='center', va='center')
         self.fig.canvas.draw()
-        self.save_state()         
+        # self.save_state()         
 
     def circularity(self):
         print("1")
@@ -166,7 +168,7 @@ class PolygonDrawer:
         # (finding smallest circumscribing circle
         # is this an instance of smallest circle problem?
         # https://www.nayuki.io/res/smallest-enclosing-circle/smallestenclosingcircle.py
-        # https://math.stackexchange.com/questions/1835931/largest-enclosed-inscribed-circle-in-cloud-of-points
+        # https://math.stackexchange.com/questions/1835931/largest-enclosed-inscribed-circle-in-cloud-of-points (find Voronoi vertex that closest point with largest distance)
 
         for poly in self.partitions:
             coordinateLst = poly.get_xy()

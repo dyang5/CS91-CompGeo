@@ -1,8 +1,10 @@
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+import smallestcircumscribingcircle
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
+from scipy.spatial import Voronoi, voronoi_plot_2d
 
 class PolygonDrawer:
     def __init__(self):
@@ -88,7 +90,7 @@ class PolygonDrawer:
 
         # when done adding polygons
         elif event.key == 'd':
-            self.circularity()
+            self.calculate_circularity()
 
     def setup(self):  
         vertex_coordinates = [(0, 0), [0, 10], [10, 0], [10, 10]]
@@ -160,28 +162,54 @@ class PolygonDrawer:
         self.fig.canvas.draw()
         # self.save_state()         
 
-    def circularity(self):
-        print("1")
+    def calculate_circularity(self):
+        print("Finding polygonal piece with maximum circularity.")
 
         # think about how to calculate circiumradius and inradius
         # https://math.stackexchange.com/questions/1948356/largest-incircle-inside-a-quadrilateral-radius-calculation (radius of largest indisk)
         # (finding smallest circumscribing circle
         # is this an instance of smallest circle problem?
         # https://www.nayuki.io/res/smallest-enclosing-circle/smallestenclosingcircle.py
-        # https://math.stackexchange.com/questions/1835931/largest-enclosed-inscribed-circle-in-cloud-of-points (find Voronoi vertex that closest point with largest distance)
+        # https://math.stackexchange.com/questions/1835931/largest-enclosed-inscribed-circle-in-cloud-of-points (find Voronoi vertex that maximizes the distance to closest site)
+
+        min_circularity = float('inf')
+        min_circularity_index = 0
+        circularities = []
+        circumcircles = []
+        indisks = []
 
         for poly in self.partitions:
             coordinateLst = poly.get_xy()
-            area = self.shoelace()
 
             # determine smallest circumscribing circle
+            circum = smallestcircumscribingcircle.make_circle(coordinateLst)
+            circumcircles.append(circum)
+            circumcircle_radii = circum[2]
 
             # determine largest indisk
+            vor = Voronoi(coordinateLst)
+            largest_min_distance = float('inf')
+            optimal_vertex = None
 
+            for voronoi_vertex in vor.vertices:
+                min_distance = float('inf')
+                for coordinate in coordinateLst:
+                    min_distance = min(np.linalg.norm(coordinate - voronoi_vertex), min_distance)
+                if min_distance < largest_min_distance:
+                    largest_min_distance = min_distance
+                    optimal_vertex = voronoi_vertex
+                indisks.append((optimal_vertex[0], optimal_vertex[1], largest_min_distance))
 
-    def shoelace(self, coordinateLst):
-        return 1
+            indisk_radii = largest_min_distance
 
+            circularity = circumcircle_radii / indisk_radii
+            circularities.append(circularity)
+            if circularity < min_circularity:
+                min_circularity = circularity
+                min_circularity_index = len(circularities) - 1
+
+        print(circularities)
+        print(min_circularity)
 
 if __name__ == "__main__":
     drawer = PolygonDrawer()

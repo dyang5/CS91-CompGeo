@@ -17,33 +17,28 @@
 \vspace{1em}
 
 \section{Problem Setup}
-In this project, I explored [Open Problem 59], the problem of partitioning a polygon into pieces, each of which is as
-``circular'' as possible. This problem was first introduced by [] and was expanded upon by Mirela Damian and Joseph O'Rourke. \\
+In this project, I explored TOPP Open Problem 59 \cite{topp}, the problem of partitioning a polygon into pieces, each of which is as
+``circular'' as possible. This problem was first studied by Mirela Damian and Joseph O'Rourke \cite{damian_rourke}. \\
 
 
 One notion of the circularity of a given polygon is its \textit{aspect ratio} -- the more ``circular'' a partition, the closer its aspect ratio is to $1$.
 
-\begin{definition}[Aspect Ratio]
-The \textbf{aspect ratio} of a polygon is the ratio of the diameters of the smallest circumscribing circle to the largest inscribed disk. \\
+\begin{definition}[Aspect Ratio \& Circularity]
+The \textbf{aspect ratio}, or \textbf{circularity}, of a polygon is the ratio of the diameters of the smallest circumscribing circle to the largest inscribed disk. \\
 
 \textit{The distinction between circle and disk is made to emphasize that the circumcircles can intersect, whereas the disks cannot.}
 \end{definition}
 
-In Open Problem 59 and this project, we focus on minimizing the aspect ratio across a set of convex partitions of a regular polygon.
+In \cite{topp} and this project, we focus on minimizing the aspect ratio across a set of convex partitions of a regular polygon.
 
 \begin{definition}[Partition]
 A \textbf{partition} of a polygon $\mathcal{P}$ is a collection of polygonal pieces $P_1, P_2 \dots $ such that $\mathcal{P} = \cup P_i$ and no pair of pieces share an interior point. 
 \end{definition}
 
-In our problem, we add the restriction that our partition of a regular polygon $P$ must be convex, meaning that each of its polygonal pieces are themselves convex. Finally, we study the 
-circularity, an extension of aspect ratio, of our convex partition.
-
-\begin{definition}[Circularity]
-The \textbf{circularity} of a convex partition of a polygon $\mathcal{P}$ is the maximum aspect ratio, across all polygonal pieces of the partition.
-\end{definition}
+In our problem, we add the restriction that our partition of a regular polygon $P$ must be convex, meaning that each of its polygonal pieces are themselves convex. \\
 
 In summary, the problem is as follows:
-\begin{goal*}Find the minimum circularity across all convex partitions of a regular polygon.
+\begin{goal*}Find convex partitions of regular polygons that minimize the maximum circularity across all pieces in the partition.
 \end{goal*}
 
 \section{Related Problems}
@@ -52,6 +47,17 @@ Calculating the circularity is difficult.
 
 \section{Approach and Methodology}
 
+\newpage
 
+\begin{thebibliography}{9}
+    \bibitem{topp}
+    Erik D. Demaine, Joseph S. B. Mitchell, Joseph O'Rourke. \textit{The Open Problems Project}. 
+    Originated from Computational Geometry Column 42. Internat. J. Comput. Geom. Appl., 11(5):573-582, 2001. Also in SIGACT News 32(3):63-72 (2001), Issue 120.
+
+    \bibitem{damian_rourke}
+    Mirela Damian and Joseph O'Rourke. \textit{Partitioning Regular Polygons into Circular Pieces I: Convex Partitions.} In Proc. 15th Canad. Conf. Comput. Geom., pages 43-46, 2003. arXiv:cs.CG/030402.    
+
+
+\end{thebibliography}
 
 \end{document}

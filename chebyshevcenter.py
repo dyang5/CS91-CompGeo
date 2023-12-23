@@ -1,23 +1,26 @@
 import numpy as np
-from scipy.optimize import minimize
-from shapely.geometry import Point, Polygon
+from scipy.optimize import linprog
 from scipy.spatial import ConvexHull
 
-def find_chebyshev_center(vertices):
-    def objective_function(center):
-        polygon = Polygon(vertices)
-        # Minimize the negative of the distance from center to polygon's exterior
-        return polygon.distance(Point(center))
-
-    # Initial guess for the Chebyshev center
-    initial_guess = np.mean(vertices, axis=0)
-
-    # Constraints: The center must be inside the convex polygon
+def largest_inscribed_circle(vertices):
     convex_hull = ConvexHull(vertices)
     convex_hull_equations = convex_hull.equations
-    constraints = [{'type': 'ineq', 'fun': lambda center, eq=eq: np.dot(eq[:-1], center) + eq[-1]} for eq in convex_hull_equations]
 
-    # Minimize the negative of the distance to find the Chebyshev center
-    result = minimize(objective_function, initial_guess, constraints=constraints)
+    norm_vector = np.reshape(np.linalg.norm(convex_hull_equations[:, :-1], axis=1),
+        (convex_hull_equations.shape[0], 1))
+    c = np.zeros((convex_hull_equations.shape[1],))
+    c[-1] = -1
+    A = np.hstack((convex_hull_equations[:, :-1], norm_vector))
+    b = - convex_hull_equations[:, -1:]
+    res = linprog(c, A_ub=A, b_ub=b, bounds=(None, None))
+    x = res.x[:-1]
+    y = res.x[-1]
+    return x, y
 
-    return result.x
+# Example usage:
+vertices = np.array([[0, 0], [1, 0], [1, 1], [0.5, 2], [0, 1]])
+
+circle_center, circle_radius = largest_inscribed_circle(vertices)
+
+print(f'Largest Inscribed Circle Center: {circle_center}')
+print(f'Largest Inscribed Circle Radius: {circle_radius}')

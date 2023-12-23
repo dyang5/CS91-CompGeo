@@ -3,13 +3,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
-from scipy.spatial import Voronoi, voronoi_plot_2d
-from shapely.geometry import Point, Polygon
+from shapely.geometry import Polygon
 
 import smallestcircumscribingcircle
 import chebyshevcenter
-
-
+import chebyshevcenter
 
 class PolygonDrawer:
     def __init__(self):
@@ -20,7 +18,6 @@ class PolygonDrawer:
         self.patches = []
         self.vertex_patches = []
         self.adding_vertices = True
-        # self.vertices = []
         self.current_polygon_x = []
         self.current_polygon_y = []
         self.current_polygon_vertices = []
@@ -39,7 +36,7 @@ class PolygonDrawer:
     def on_click(self, event):
         # if in adding vertices stage and left mouse button is clicked
         if self.adding_vertices and event.button == 1:  
-            print("GOOD " + str(event.xdata) + " " + str(event.ydata))
+            print("Point added at: " + str(event.xdata) + " " + str(event.ydata))
             self.add_point(event.xdata, event.ydata)
             
         # set up polygon creation
@@ -99,7 +96,6 @@ class PolygonDrawer:
 
     def setup(self):  
         vertex_coordinates = [(0, 0), [0, 10], [10, 0], [10, 10]]
-        # self.vertices.append(vertex_coordinates)
 
         for coord in vertex_coordinates:
             x, y = coord
@@ -118,7 +114,7 @@ class PolygonDrawer:
         self.fig.canvas.draw()
     
     def create_polygon(self, coordinateLst):
-        self.partitions.append(mpl.patches.Polygon(coordinateLst, closed=True, facecolor = 'white', edgecolor='black', zorder = 10))
+        self.partitions.append(mpl.patches.Polygon(coordinateLst, closed=True, facecolor = 'none', edgecolor='black', zorder = 10))
         self.patches.append(self.partitions[len(self.partitions) - 1])
         self.ax.add_patch(self.partitions[len(self.partitions) - 1])
 
@@ -165,67 +161,49 @@ class PolygonDrawer:
     def add_label(self, x, y, label):
         self.ax.text(x, y, label, fontsize=5, color='black', ha='center', va='center')
         self.fig.canvas.draw()
-        # self.save_state()         
 
     def calculate_circularity(self):
         print("Finding polygonal piece with maximum circularity.")
 
-        # think about how to calculate circiumradius and inradius
-        # https://math.stackexchange.com/questions/1948356/largest-incircle-inside-a-quadrilateral-radius-calculation (radius of largest indisk)
-        # (finding smallest circumscribing circle
-        # is this an instance of smallest circle problem?
-        # https://www.nayuki.io/res/smallest-enclosing-circle/smallestenclosingcircle.py
-        # https://math.stackexchange.com/questions/1835931/largest-enclosed-inscribed-circle-in-cloud-of-points (find Voronoi vertex that maximizes the distance to closest site)
+        if len(self.partitions) < 1:
+            print("Error: need to select convex polygonal pieces.")
+        
+        else:
+            max_circularity = -1
+            max_circularity_index = -1
+            circularities = []
+            circumcircles = []
+            indisks = []
 
-        max_circularity = -1
-        min_circularity_index = 0
-        circularities = []
-        circumcircles = []
-        indisks = []
+            for poly in self.partitions:
+                coordinateLst = poly.get_xy()
 
-        for poly in self.partitions:
-            coordinateLst = poly.get_xy()
-            # determine smallest circumscribing circle
-            circum = smallestcircumscribingcircle.make_circle(coordinateLst)
-            circumcircles.append(circum)
-            circumcircle_radii = circum[2]
+                # determine smallest circumscribing circle
+                circum = smallestcircumscribingcircle.make_circle(coordinateLst)
+                circumcircles.append(circum)
+                circumcircle_radii = circum[2]
+                
+                # use chebyshev center to find largest inscribed disk
+                chebyshev_center, indisk_radii = chebyshevcenter.largest_inscribed_circle(coordinateLst)
+                
+                indisk = (chebyshev_center[0], chebyshev_center[1], indisk_radii)
 
-            boundary_polygon = Polygon(coordinateLst)
+                indisks.append(indisk)
 
-            chebyshev_center = chebyshevcenter.find_chebyshev_center(coordinateLst)
-            indisk_radii = boundary_polygon.exterior.distance(Point(chebyshev_center))
+                circularity = circumcircle_radii / indisk_radii
+                circularities.append(circularity)
+                if circularity > max_circularity:
+                    max_circularity = circularity
+                    max_circularity_index = len(circularities) - 1
 
-                # # determine largest indisk
-                # vor = Voronoi(coordinateLst)
-                # largest_min_distance = float('inf')
-                # optimal_vertex = None
-
-
-                # for voronoi_vertex in vor.vertices:
-                #     min_distance = boundary_polygon.exterior.distance(Point(voronoi_vertex))
-                #     if min_distance < largest_min_distance:
-                #         largest_min_distance = min_distance
-                #         optimal_vertex = voronoi_vertex
-
-
-                # indisk_radii = boundary_polygon.exterior.distance(Point(optimal_vertex))
-            
-            indisk = (chebyshev_center[0], chebyshev_center[1], indisk_radii)
-            self.ax.add_patch(mpl.patches.Circle((indisk[0], indisk[1]), radius = indisk[2], edgecolor = 'red', facecolor='white', zorder = 15))
+            self.ax.add_patch(mpl.patches.Circle((indisks[max_circularity_index][0], indisks[max_circularity_index][1]), radius = indisks[max_circularity_index][2], edgecolor = 'red', facecolor='none', zorder = 500000))
             self.fig.canvas.draw()
 
-            self.ax.add_patch(mpl.patches.Circle((circum[0], circum[1]), radius = circum[2], edgecolor = 'blue', facecolor='white', zorder = 9))
-
+            self.ax.add_patch(mpl.patches.Circle((circumcircles[max_circularity_index][0], circumcircles[max_circularity_index][1]), radius = circumcircles[max_circularity_index][2], edgecolor = 'blue', facecolor='none', zorder = 20000))
             self.fig.canvas.draw()
-            indisks.append(indisk)
 
-            circularity = circumcircle_radii / indisk_radii
-            circularities.append(circularity)
-            if circularity > max_circularity:
-                max_circularity = circularity
-                max_circularity_index = len(circularities) - 1
-
-        print(circularities)
+            print('\n\n')
+            print('The maximum circularity for a polygonal piece in the given partition is ' + str(circularities[max_circularity_index]))
 
 if __name__ == "__main__":
     drawer = PolygonDrawer()

@@ -17,10 +17,10 @@ def largest_inscribed_circle(vertices):
     y = res.x[-1]
     return x, y
 
-# Example usage:
-vertices = np.array([[0, 0], [1, 0], [1, 1], [0.5, 2], [0, 1]])
+# # Example usage:
+# vertices = np.array([[0, 0], [1, 0], [1, 1], [0.5, 2], [0, 1]])
 
-circle_center, circle_radius = largest_inscribed_circle(vertices)
+# circle_center, circle_radius = largest_inscribed_circle(vertices)
 
-print(f'Largest Inscribed Circle Center: {circle_center}')
-print(f'Largest Inscribed Circle Radius: {circle_radius}')
+# print(f'Largest Inscribed Circle Center: {circle_center}')
+# print(f'Largest Inscribed Circle Radius: {circle_radius}')

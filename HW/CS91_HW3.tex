@@ -98,6 +98,23 @@
 \begin{enumerate}
     \item\textbf{Prove that if $e\leq0$ and $v\leq1$ are integers with $e\leq \frac{v(v-1)}{2}$, then there is a graph with $v$ vertices, $e$ edges, and at most $e^3/v^2$ crossings.} 
 
+
+%Proof by construction.
+
+%Start by creating a graph of no edges and $v$ vertices in the shape of a $v$-sized $n$-gon. We are going to show that building the complete graph of the $n$-gon yields a less than or equal crossing number of $e^3/v^2$. \\
+
+%Each generation will be defined by connecting every $i$th vertex until a complete graph is created where $i$ is indicative of the generation number. For example, generation 1 will close the simple polygon formed by the vertices in $v$ to form its boundary. We can assume that $n$ total edges will be created during each generation, with the exception of $n/2$, which is still handled within the bound of this assumption. Therefore, we can reason that there are $\left\lfloor\frac{e}{n}\right\rfloor + 1$ generations are required to complete the graph. We define this value to be $g$. (this finally makes sense to me) \\
+
+%Next, we want to find the total possible edges any other given edge can cross with. The most amount of vertices between an edge is the generation number subtracted by 1: $g-1$. The reason we subtract 1 is to exclude the first generation by which the $n$-gon exterior is created, which will never be crossed with. This makes sense intuitively as the only edges that can cross with our chosen edge are those that connect to vertices "between" the chosen edges own vertices. Each of these $g-1$ vertices is also connected to a maximum of $g-1$ edges for the same reason stipulated above. In summary: for each edge, there is the possibility to cross with edges belonging to at most $g-1$ vertices which each have at most $g-1$ interior edges. Therefore, the following must be true about the number of crossings in this graph: 
+%\begin{equation}
+    %\begin{split}
+        %CR(G) &\leq e(g-1)(g-1) \\
+        %&\leq e(\left\lfloor\frac{e}{n}\right\rfloor)%(\left\lfloor\frac{e}{n}\right\rfloor) \\
+        %&\leq e(\left\lfloor\frac{e}{n}\right\rfloor)^2
+    %\end{split}
+%\end{equation}
+%Because $\left\lfloor\frac{e}{n}\right\rfloor\leq\frac{e}{n}$, we have proven that $CR(G)\leq e^3/v^2$ must also be true. \\ \\ \\ 
+    
 \begin{solution}
 We define an explicit construction as follows. Space out the $v$ vertices equally along the circumference of a unit circle, and order them  $a_1$ to $a_v$ by clockwise order. We define the $i^{\text{th}}$, for $i \geq 1$, generation of edges in our construction to be the edges $\overline{a_{j} a_{(j+i) \, \% v}}$ for each $j$ from $1$ to $v$. For example, the first generation of edges constitutes the boundary of an $n$-gon.\\
 
@@ -162,5 +179,22 @@ as desired.
 
     Solving for $I$, we find that $I = O(n^{4/3})$. Thus, we conclude that there are $O(n^{4/3})$ pairs of points in $P$ that are at distance exactly $1$ from each other, as desired. \end{solution}
 
+    
+
+    
+    % Together, both sets will consist of $n$ elements (points and circles). Every point-circle incidence, the intersection between a circle in $C$ and a point in $P$, represents a pair of points exactly distance 1 from each other (do we need to add more to this?). Two points spaced exactly distance 1 from each other will create two incidences as each of their respective circles will intersect with the opposite's point. Therefore, the number of point-circle incidences between these two sets is equal to twice the number of pairs of points of distance 1 in $P$. \\
+
+    % TODO: Prove Szemeredi-trotter theorem holds true for circles as it does for lines. \\
+    
+    % By proving the Szemeredi-Trotter theorem holds true for circles as it does for lines, we can show the following for number of point-circle incidences:
+    % \begin{equation}
+    % \begin{split}
+    %     Incidences &= O(n^{2/3}m^{2/3}+n+m)  \\
+    %     Incidences &= O(n^{2/3}n^{2/3}+n+n) \hspace{0.5em}\text{(there are n circles)} \\
+    %     Incidences &= O(n^{4/3})
+    % \end{split}
+    % \end{equation}
+    % Recall that there are twice the number of point-circle incidences than the number of pairs of points distanced 1 from each other. Therefore, it holds that the number of pairs of points must also be $O(n^{4/3})$, as desired.
+    
 \end{enumerate}
 \end{document}

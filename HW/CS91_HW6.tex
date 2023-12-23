@@ -182,5 +182,23 @@ For the forward implication, note that if $(G, k)$ is in VC, there is some verte
 
 For the reverse implication, note that if $(T, P, k)$ is in TRIHIT, then is some subset $S \subseteq P$ of cardinality $k$ such that each triangle in $T$ contains a point from $S$ in its interior. By construction, then, this means that every edge in $E$ has one of its endpoints represented in $S$, and thus, $G$ must have a valid vertex cover of size $k$, i.e. $(G, k)$ is in VC. \end{solution}
 
+
+% \item\textbf{Nick's Solution (1)}
+
+% The input of IS is given as a graph $G$ and $k$, expressed as $(G(V,E), k)$. Define another graph, $G'$ that includes all vertices $V$ as well a new vertex, $v$. Define the edges of $G'$ to be the same as $E$ as well as all edges that connect the vertices of $V$ to $v$. We will prove that $(G(V, E),k)$ is in IS if and only if  $(G'(V', E'), k)$ is in E2S. \\
+
+% First, we will prove that if $(G(V, E), k)$ is in IS, then $(G'(V',E'), k)$ is in E2S. Take any two vertices that make up the IS of $G$. These vertices must have a path of at least 2 by definition of the independent set. To satisfy the E2S condition, we must ensure the path length of these two vertices is exactly 2 which can be found in $G'$ by way of $v$. 
+
+% Now, we will prove that if $(G'(V', E'), k)$ is in E2S, then $(G(V,E), k)$ is in IS. Any subset of V' representing a solution to E2S can easily be "transformed" into a correct IS set in G by removing the vertex $v$. By definition of E2S, each vertex is already a path of length 2 away from any other vertex. Therefore, removing $v$ will sitll satisfy IS as the conditions for IS are already satisfied prior to removing this vertex.
+
+% \item\textbf{Nick's Solution (2)}
+
+% The input of PARTITION is given as a set $X$ of positive integers to be partitioned into two more sets, $L$ and $R$ of equal sums. We will apply a function to this input to design an input to KNAPSACK. Let the total sum of all elements in $X$ can be defined as $T$. Call an instance of KNAPSACK in which the values and weights are equally defined as the integers in $X$. Also add that the values of $W$ and $V$ that constrain the list are also equivalent to $\frac{T}{2}$. We will prove that $X$ is in PARTITION if and only if $W=V=T/2$ with weights and values the same as $X$ is in KNAPSACK. \\
+
+% First, we will prove the forward direction. If there is a solution to PARTITION, then the condition that $L$ and $R$ have equal sums of $\frac{T}{2}$ holds true, and therefore $W=V=\frac{T}{2}$. The constraints of KNAPSACK are therefore met as a subset exists with the values of $X=w_1...w_n=v_1...v_n$ by design of the instance. \\
+
+% For the opposite direction, assume there is a solution to $W$
+% and $V$ by which $W=V=T/2$. The set that accomplishes this solution will be the same that represents one of the sides of PARTITION. The rest of the values that are not part o f the succeeding subset represent the other side of PARTITION.
+
 \end{enumerate}
 \end{document}

@@ -174,16 +174,11 @@
 
     \textbf{Runtime Analysis:} Lines $1$ to $6$ in our algorithm constitute the preprocessing steps. In lines $1$ and $2$ we create (initially) empty lists $A$ and $EP$, which will hold our stored arcs and event points. In line $4$, we split each of the $n$ disks vertically, appending the highest and lowest points (in terms of $y$-coordinate) to the list of event points and in line $5$, we append the two resulting arcs to the list of arcs; since there are $O(2n)$ event points and $O(2n)$ arcs, we can do this appending in $O(n)$ time. \\
 
-    In line $7$, we sort our $O(n)$ event points in reverse order of $y$-coordinate so that the highest vertical points are listed first; this sorting takes $O(n \log n)$ time. Finally, in lines $8$ to $14$, we run a modified version of the \textsc{PlaneSweep} algorithm that ignores intersections between arcs belonging to the same disk and that performs another check between neighboring circles for their corresponding arcs. 
-    \textsc{PlaneSweep} runs in $O((n+m) \log n)$ time for $n$ points and $m$ intersection points; here, our modification ignores the $O(n)$ intersections between arcs of the same disk and if any other intersection occurs, the algorithm terminates and we return true. Our extra check that compares the centers of the circles and the sum of their radii is a constant time check for each new neighbor relation introduced. 
-    Since each of our $O(n)$ event points introduces a constant number of new neighbor relations, the total time from these checks is $O(n) \cdot O(1) \cdot O(1) = O(n)$. Consequently, our modified \textsc{PlaneSweep} algorithm runs in $O((n+ O(n))\log n) + O(n) = O(n \log n)$ time. \\
+    In line $7$, we sort our $O(n)$ event points in reverse order of $y$-coordinate so that the highest vertical points are listed first; this sorting takes $O(n \log n)$ time. Finally, in lines $8$ to $14$, we run a modified version of the \textsc{PlaneSweep} algorithm that ignores intersections between arcs belonging to the same disk and that performs another check between neighboring circles for their corresponding arcs. \textsc{PlaneSweep} runs in $O((n+m) \log n)$ time for $n$ points and $m$ intersection points; here, our modification ignores the $O(n)$ intersections between arcs of the same disk and if any other intersection occurs, the algorithm terminates and we return true. Our extra check that compares the centers of the circles and the sum of their radii is a constant time check for each new neighbor relation introduced. Since each of our $O(n)$ event points introduces a constant number of new neighbor relations, the total time from these checks is $O(n) \cdot O(1) \cdot O(1) = O(n)$. Consequently, our modified \textsc{PlaneSweep} algorithm runs in $O((n+ O(n))\log n) + O(n) = O(n \log n)$ time. \\
 
     Our preprocessing takes $O(n)$ time, our sorting takes $O(n \log n)$ time, and the \textsc{PlaneSweep} algorithm takes $O(n \log n)$ time; thus, our overall algorithm runs in the desired $O(n \log n)$ time. \\
 
-    \textbf{Proof of Correctness:} We will prove the correctness of this algorithm using induction on the number of event points already handled; more specifically, we will show that the order of the arcs in our BST is properly maintained at each iteration. For the base case, observe that our algorithm correctly handles the first event point; \textsc{PlaneSweep} simply adds the arc of the event point to a BST, and the order is correct given there is just one arc. 
-    For the inductive step, we will show that our algorithm maintains the proper segment ordering (or concludes) at a new event point given that the previous event points are correctly handled. When a new event point is reached, if it is the endpoint of a previous arc, it will be removed from the BST. 
-    On the other hand, if it constitutes a new arc, we will perform an extra check (explained below) and insert it into the proper position in the BST. Since the order of the arcs in the BST can only change at event points, we know that the order of the BST is properly maintained after handling this new event point, as desired. 
-    Thus, by induction, our modified \textsc{PlaneSweep} properly handles the order of the arcs at each event point.  \\
+    \textbf{Proof of Correctness:} We will prove the correctness of this algorithm using induction on the number of event points already handled; more specifically, we will show that the order of the arcs in our BST is properly maintained at each iteration. For the base case, observe that our algorithm correctly handles the first event point; \textsc{PlaneSweep} simply adds the arc of the event point to a BST, and the order is correct given there is just one arc. For the inductive step, we will show that our algorithm maintains the proper segment ordering (or concludes) at a new event point given that the previous event points are correctly handled. When a new event point is reached, if it is the endpoint of a previous arc, it will be removed from the BST. On the other hand, if it constitutes a new arc, we will perform an extra check (explained below) and insert it into the proper position in the BST. Since the order of the arcs in the BST can only change at event points, we know that the order of the BST is properly maintained after handling this new event point, as desired. Thus, by induction, our modified \textsc{PlaneSweep} properly handles the order of the arcs at each event point.  \\
     
     \textsc{PlaneSweep} with no modifications finds intersections between the arcs of each disk; equivalently, it detects intersections between the boundaries of the disks. We ignore ``trivial" intersections between arcs belonging to the same disk since such an intersection does not correspond to a pair of overlapping disks. It remains to show that our additional modification to the \textsc{PlaneSweep} algorithm detects a disk that is fully contained in another since such an intersection will not be found by a typical \textsc{PlaneSweep} algorithm. \\
 
@@ -264,6 +259,8 @@
 
     Assume we are given an array list, $S$, that contains a pair of the points $p_i$ and $q_i$ that make up each line segment, and the point $z$ to check visibility from. 
     
+    % Also assume a class $Line$ exists that can hold: two points of a line segment (by their polar angle and radius) and a numeric order $(1, 2, \dots n)$.
+
     \begin{minipage}[t]{0.9\textwidth}
     \begin{algorithm}[H]
     \caption{\textsc{FindVisibleSegments}($S$, $z$)}
@@ -305,6 +302,9 @@
     \footnotetext{we can add by binary searching the existing regions.}
     \vspace{1cm}
 
+        %OH notes:  
+    % replace smaller radius with different method that compares new line to the current line that is visible. The method proposed  is to keep an ordered list of everything hit by the angle of a sweep.
+
     \textbf{Explanation}: We are only checking the $2n$ endpoints of each line. The \textit{active} AVL tree contains segments where we have not yet found the second endpoint of the segment. The \textit{notVisible} AVL tree contains segments we do not currently see (since some other segment is blocking their previously seen endpoint). Both of these AVL trees are ordered by the relative position of the segments relative to the most recent event point. \\
     
     \textbf{Runtime Analysis:}
@@ -316,6 +316,11 @@
 
     Lines $22$ to $27$ correspond to the other case, where the second endpoint of the current event point has not yet been seen in the angular sweep. In this case, we insert the line corresponding to the event point into the proper position in $active$ by binary searching the disjoint regions created by the lines in $active$ at the angle of the event point\footnote{this works since the lines are disjoint and thus there are no intersections; the binary search is very similar to Lab 3 Question 1}; this runs in $O(\log n)$ time and the insertion into $active$ will also take $O(\log n)$ time. Finally, we check an extra condition and perform an extra insertion, which runs in $O(\log n)$ time.\\
 
+    % We check if the point of every line is in $active$ or not. $active$ is an AVL tree, and so searching for a value takes $O(\log n)$-time. 
+    % \begin{itemize}
+    %     \item If $pt$ is in $active$ is, we know that $pt$ is at the end of a line, and we check if it belongs to $notVisible$, an AVL tree which is an $O(\log n)$-time operation. We then remove the line from the $smallestRadius$ min heap and $active$ AVL tree, both in $O(\log n)-time$. We finally check if the new closest line to $z$ is in AVL tree, $notVisible$ and if it is, remove it in $O(\log n)$-time.
+    %     \item If $pt$ is not in $active$, we know that we found the start of a line. We find the angle of the point from $z$ in constant time. We also find the closest point on the closest line (top of min heap) also in constant time. We perform a comparison between the distance from $z$ to the closest point and the radius of $pt$ to check whether $pt$ is visible or not. Adding $pt$ to $notVisible$, $active$, and $smallestRadius$ all take $O(\log n)$ time.
+    % \end{itemize}  
     There will be $2n$ for-loop iterations because there are two endpoints for each of the $n$ lines in $S$. Therefore, the following represents the total run-time of this algorithm:
     \[\underbrace{O(n \log n)}_{\text{merge-sort}} + \underbrace{O(2n * (c \cdot O(\log n))}_{\text{angular sweep algorithm}} = O(n \log n).\]
 
